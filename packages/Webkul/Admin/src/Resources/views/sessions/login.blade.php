@@ -4,24 +4,13 @@
         @lang('admin::app.users.login.title')
     </x-slot>
 
-    <div class="flex h-[100vh] flex-col items-center justify-center gap-10">
+    <div class="flex min-h-screen flex-col items-center justify-center gap-8 bg-[#f4f7f8] px-4 py-10">
         <div class="flex flex-col items-center gap-5">
             <!-- Logo -->
-            @if ($logo = core()->getConfigData('general.general.admin_logo.logo_image'))
-                <img
-                    class="h-10 w-[110px]"
-                    src="{{ Storage::url($logo) }}"
-                    alt="{{ config('app.name') }}"
-                />
-            @else
-                <img
-                    class="w-max"
-                    src="{{ vite()->asset('images/logo.svg') }}"
-                    alt="{{ config('app.name') }}"
-                />
-            @endif
+            <img class="h-16 max-w-[260px] object-contain" src="https://res.cloudinary.com/u7dpgaxh/image/upload/v1788452129/csr1r2ibo1ekt0ibivjq.png" alt="The Raeburn Group" />
+            <p class="text-center text-sm font-semibold tracking-[0.18em] text-[#011A29]">INTERNAL CRM & ATS</p>
 
-            <div class="box-shadow flex min-w-[300px] flex-col rounded-md bg-white dark:bg-gray-900">
+            <div class="box-shadow flex w-full min-w-[300px] max-w-[420px] flex-col rounded-xl border border-[#dbe4e8] bg-white shadow-lg dark:bg-gray-900">
                 {!! view_render_event('admin.sessions.login.form_controls.before') !!}
 
                 <!-- Login Form -->
