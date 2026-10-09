@@ -10,7 +10,7 @@
 
     {!! view_render_event('admin.layout.head.before') !!}
 
-    <title>{{ $title }}</title>
+    <title>{{ $title }} | The Raeburn Group</title>
 
     <meta charset="UTF-8">
 
@@ -55,7 +55,7 @@
     <link
         rel="preload"
         as="image"
-        href="{{ url('cache/logo/bagisto.png') }}"
+        href="https://res.cloudinary.com/u7dpgaxh/image/upload/v1788452129/csr1r2ibo1ekt0ibivjq.png"
     >
 
     @if ($favicon = core()->getConfigData('general.general.admin_logo.favicon_image'))
@@ -75,7 +75,7 @@
     @endif
 
     @php
-        $brandColor = core()->getConfigData('general.settings.menu_color.brand_color') ?? '#0E90D9';
+        $brandColor = '#011A29';
     @endphp
 
     @stack('styles')
