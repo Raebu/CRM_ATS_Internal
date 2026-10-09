@@ -17,20 +17,7 @@
             </x-slot>
 
             <x-slot:header>
-                @if ($logo = core()->getConfigData('general.general.admin_logo.logo_image'))
-                    <img
-                        class="h-10"
-                        src="{{ Storage::url($logo) }}"
-                        alt="{{ config('app.name') }}"
-                    />
-                @else
-                    <img
-                        class="h-10"
-                        src="{{ request()->cookie('dark_mode') ? vite()->asset('images/dark-logo.svg') : vite()->asset('images/logo.svg') }}"
-                        id="logo-image"
-                        alt="{{ config('app.name') }}"
-                    />
-                @endif
+                <img class="h-10 max-w-[190px] object-contain" src="https://res.cloudinary.com/u7dpgaxh/image/upload/v1788452129/csr1r2ibo1ekt0ibivjq.png" alt="The Raeburn Group" />
             </x-slot>
 
             <x-slot:content class="p-4">

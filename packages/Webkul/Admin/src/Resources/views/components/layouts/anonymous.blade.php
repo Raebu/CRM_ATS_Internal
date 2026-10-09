@@ -6,7 +6,7 @@
 >
 
 <head>
-    <title>{{ $title ?? '' }}</title>
+    <title>{{ $title ?? 'CRM & ATS' }} | The Raeburn Group</title>
 
     <meta charset="UTF-8">
 
@@ -65,7 +65,7 @@
     @endif
 
     @php
-        $brandColor = core()->getConfigData('general.settings.menu_color.brand_color') ?? '#0E90D9';
+        $brandColor = '#011A29';
     @endphp
 
     @stack('styles')

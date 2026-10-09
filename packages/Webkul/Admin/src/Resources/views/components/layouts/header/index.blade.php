@@ -5,27 +5,7 @@
         <x-admin::layouts.sidebar.mobile />
         
         <a href="{{ route('admin.dashboard.index') }}">
-            @if ($logo = core()->getConfigData('general.general.admin_logo.logo_image'))
-                <img
-                    class="h-10"
-                    src="{{ Storage::url($logo) }}"
-                    alt="{{ config('app.name') }}"
-                />
-            @else
-                <img
-                    class="h-10 max-sm:hidden"
-                    src="{{ request()->cookie('dark_mode') ? vite()->asset('images/dark-logo.svg') : vite()->asset('images/logo.svg') }}"
-                    id="logo-image"
-                    alt="{{ config('app.name') }}"
-                />
-
-                <img
-                    class="h-10 sm:hidden"
-                    src="{{ request()->cookie('dark_mode') ? vite()->asset('images/mobile-dark-logo.svg') : vite()->asset('images/mobile-light-logo.svg') }}"
-                    id="logo-image"
-                    alt="{{ config('app.name') }}"
-                />
-            @endif
+            <img class="h-9 w-auto max-w-[170px] object-contain" src="https://res.cloudinary.com/u7dpgaxh/image/upload/v1788452129/csr1r2ibo1ekt0ibivjq.png" alt="The Raeburn Group" />
         </a>
     </div>
 
@@ -79,22 +59,7 @@
             <!-- Admin Dropdown -->
             <x-slot:content class="mt-2 border-t-0 !p-0">
                 <div class="flex items-center gap-1.5 border border-x-0 border-b-gray-300 px-5 py-2.5 dark:border-gray-800">
-                    @if ($logo = core()->getConfigData('general.general.admin_logo.logo_image'))
-                        <img
-                            src="{{ Storage::url($logo) }}"
-                            alt="{{ config('app.name') }}"
-                            width="24"
-                            height="24"
-                        />
-                    @else
-                        <img
-                            src="{{ request()->cookie('dark_mode') ? vite()->asset('images/dark-logo.svg') : vite()->asset('images/logo.svg') }}"
-                            id="logo-image"
-                            alt="{{ config('app.name') }}"
-                            width="24"
-                            height="24"
-                        />
-                    @endif
+                    <img src="https://res.cloudinary.com/u7dpgaxh/image/upload/v1788452129/csr1r2ibo1ekt0ibivjq.png" alt="The Raeburn Group" class="h-7 w-7 object-contain" />
 
                     <!-- Version -->
                     <p class="text-gray-400">
@@ -174,11 +139,11 @@
                     if (this.isDarkMode) {
                         this.$emitter.emit('change-theme', 'dark');
 
-                        document.getElementById('logo-image').src = this.dark_logo;
+                        // Raeburn logo is theme-independent.
                     } else {
                         this.$emitter.emit('change-theme', 'light');
 
-                        document.getElementById('logo-image').src = this.logo;
+                        // Raeburn logo is theme-independent.
                     }
                 },
 
