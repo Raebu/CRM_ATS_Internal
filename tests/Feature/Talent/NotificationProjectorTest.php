@@ -14,6 +14,7 @@ class NotificationProjectorTest extends TestCase {
   $projector->project($id,'application.created.v1',$tenant->id,['application_id'=>15]);
   $projector->project($id,'application.created.v1',$tenant->id,['application_id'=>15]);
   $this->assertSame(1,RecruitmentNotification::where('source_event_id',$id)->count());
+  $this->assertSame(15,RecruitmentNotification::where('source_event_id',$id)->firstOrFail()->data['record_id']);
  }
  public function test_unrecognised_events_are_ignored():void {
   $tenant=Tenant::firstOrCreate(['slug'=>'raeburn-group'],['name'=>'The Raeburn Group']);
