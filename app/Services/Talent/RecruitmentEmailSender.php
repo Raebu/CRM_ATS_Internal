@@ -21,7 +21,7 @@ final class RecruitmentEmailSender {
    || !EmailSnapshotIntegrity::valid($delivery) || !filter_var($delivery->recipient_email,FILTER_VALIDATE_EMAIL)) {
    throw ValidationException::withMessages(['email'=>'An intact, approved delivery with a verified destination is required.']);
   }
-  $response=Http::withToken($key)->timeout(15)->acceptJson()->post('https://api.resend.com/emails',[
+  $response=Http::withToken($key)->timeout(15)->acceptJson()->withHeaders(['Idempotency-Key'=>'talent-delivery-'.$delivery->id.'-'.substr($delivery->template_checksum,0,16)])->post('https://api.resend.com/emails',[
    'from'=>$sender,'to'=>[$delivery->recipient_email],
    'subject'=>$delivery->subject_snapshot,'text'=>$delivery->body_snapshot,
   ]);
