@@ -1,0 +1,42 @@
+name: Native Talent PHP checks
+on:
+  pull_request:
+    paths:
+      - 'app/Http/Controllers/Talent/**'
+      - 'app/Models/Talent/**'
+      - 'app/Services/Talent/**'
+      - 'database/migrations/2026_10_12_12*.php'
+      - 'tests/**/Talent/**'
+      - '.github/workflows/talent-php-checks.yml'
+  workflow_dispatch:
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+          coverage: none
+      - name: Lint all native Talent PHP files
+        shell: bash
+        run: |
+          set -euo pipefail
+          find app/Http/Controllers/Talent app/Models/Talent app/Services/Talent tests/Feature/Talent tests/Unit/Talent -type f -name '*.php' -print0 |
+            xargs -0 -n1 php -l
+          for file in database/migrations/2026_10_12_12*.php; do php -l "$file"; done
+  transitions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+          coverage: none
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Run policy unit tests
+        run: vendor/bin/phpunit --testsuite Unit --filter RecruitmentTransitionsTest
