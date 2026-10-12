@@ -19,6 +19,12 @@ The Raeburn Talent functional specification supplied 12 October 2026 is the requ
 
 These controls are scaffolding, not a full offer-approval/acceptance workflow. Scheduling currently creates internal records only, not calendar invitations. Before enabling production use, enforce permitted stage transitions, role-based authorisation, cross-tenant tests, offer approval rules, concurrency-safe versioning and complete activity audit trails.
 
+## Candidate search and talent pools
+- Tenant-scoped candidate name/email search in internal recruitment workspace.
+- Named talent pools with tenant-scoped membership validation and duplicate-safe insertion.
+- Basic pool membership regression test added (not executed).
+- Further privacy, granular membership authorization, pagination and retrieval controls are required.
+
 ## NOT implemented yet
 External candidate application submission, public careers pages, approvals, public vacancy publication, complete interview scheduling integrations, complete offer approvals/acceptance, assessments, private CV storage and malware scanning, tenant-specific access/RBAC, robust organisation-level tenant context, board integrations, attribution history, integrations, queue consumers, notifications, audit actors, granular permissions, privacy/DSAR/retention, analytics, AI, feature flags, billing, and full security tests.
 
