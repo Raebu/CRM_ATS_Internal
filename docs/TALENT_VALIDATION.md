@@ -46,3 +46,9 @@ No tests from this checklist should be described as passed unless CI or a record
 - A unique event ID/kind constraint prevents repeated outbox delivery from duplicating a notification.
 - The notification projector runs before the outbox event is marked published. It does not send external email, SMS or WhatsApp.
 - Remaining: notification inbox UI, recipients and access policies, scheduled alerts, email templates and delivery, full observability and production verification.
+
+## Internal notification inbox
+- Added a paginated, tenant-scoped notification inbox with separate `talent.notifications.view` and `talent.notifications.manage` permissions.
+- Acknowledge is an idempotent restricted POST/PATCH action and is not an external delivery confirmation.
+- No recipient-based routing, external email, escalations, scheduling or notification delivery confirmation yet.
+- Production rollout still blocked pending end-to-end access control tests and complete security review.
