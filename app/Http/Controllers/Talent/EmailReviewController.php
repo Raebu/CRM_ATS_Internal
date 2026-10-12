@@ -38,7 +38,6 @@ class EmailReviewController extends Controller
   $tenant=$this->tenant();
   // Recipient must be resolved from the tenant's existing application record.
   // Never accept an arbitrary email address from a draft approver.
-  $request->validate([]);
   DB::transaction(function()use($tenant,$id){
    $delivery=EmailDelivery::where('tenant_id',$tenant->id)->lockForUpdate()->findOrFail($id);
    abort_unless($delivery->status==='draft',409);
