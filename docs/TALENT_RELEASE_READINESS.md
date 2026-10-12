@@ -43,3 +43,8 @@ There is no claim that this checklist or the earlier scaffold completes the prod
 - Fixed an ACL loader error caused by a route-less `talent.candidates.view` permission by explicitly supplying an empty route mapping; authenticated MySQL tests passed after the fix.
 - Added negative-path HTTP checks for privacy, notifications, analytics, email review and approval, CV downloads, offers, interviews and pool creation.
 - The expanded denial test matrix requires a fresh CI pass. It tests a restricted base recruiter, not all possible permission combinations, tenant roles, or record-level ownership.
+
+## Privacy-request accountability increment
+- Privacy requests now record a provisional review date one calendar month after receipt, surfaced in the admin review table. It is **not** an automatic legal deadline calculation; authorised staff must account for UK GDPR rules, pauses/extensions, exceptions and local policy.
+- Resolution/decline now requires a decision code and free-text reasoning. Identity-verification review timestamp is recorded, but no proof of identity is collected or independently validated by the application.
+- This does NOT perform the request, redact candidate records, generate a data export, apply legal holds or make the system compliant. All remain explicit stop-ship conditions.
