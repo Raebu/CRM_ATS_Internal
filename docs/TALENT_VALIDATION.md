@@ -28,3 +28,9 @@ No tests from this checklist should be described as passed unless CI or a record
 - Admin roles with `permission_type=all` retain access; custom roles must carry the *exact* permission for each operation.
 - Unit tests cover simple allowed/denied role permission combinations, but complete authenticated HTTP denial tests are still required.
 - The Talent dashboard currently exposes names/emails to the `talent` permission; refine view permissions, field-level access and tenant membership before production recruitment data.
+
+## Privacy request tracker
+- Internal, restricted tracking of access, correction, erasure, objection, portability and restriction requests is now scaffolded.
+- Requests start pending identity verification; status updates are controlled and emit records to the outbox.
+- This does NOT fulfil DSARs, export files, erase data, determine lawful bases, calculate statutory deadlines, or implement consent/retention compliance.
+- Before production: privacy-reviewer permissions, secure identity verification, full request/decision audit, legal holds, response deadlines, actual data export/erasure pipeline and human review are required.
