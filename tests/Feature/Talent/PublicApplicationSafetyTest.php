@@ -10,6 +10,18 @@ class PublicApplicationSafetyTest extends TestCase
 {
  use RefreshDatabase;
 
+ public function test_application_submission_creates_candidate_and_application_in_isolated_test_database():void
+ {
+  $this->withoutMiddleware(CanInstall::class);
+  config()->set('talent.public_applications_enabled',true);
+  $tenant=Tenant::firstOrCreate(['slug'=>'raeburn-group'],['name'=>'The Raeburn Group']);
+  $job=Job::create(['tenant_id'=>$tenant->id,'title'=>'Test Applicant Vacancy','slug'=>'test-application-vacancy','description'=>'Testing','status'=>'published']);
+  $this->post(route('talent.public.apply.store',$job->slug),[
+   'name'=>'Synthetic Applicant','email'=>'synthetic-applicant@example.invalid','privacy_acknowledged'=>'1',
+  ])->assertRedirect(route('talent.public.thank_you'));
+  $this->assertDatabaseHas('talent_candidates',['tenant_id'=>$tenant->id,'email'=>'synthetic-applicant@example.invalid']);
+  $this->assertDatabaseHas('talent_applications',['tenant_id'=>$tenant->id,'job_id'=>$job->id,'source'=>'raeburn_careers','stage'=>'applied']);
+ }
  public function test_careers_lists_only_open_published_vacancies():void
  {
   $this->withoutMiddleware(CanInstall::class);
