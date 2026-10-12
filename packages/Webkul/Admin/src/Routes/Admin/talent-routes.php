@@ -49,3 +49,8 @@ Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->prefix('tale
 });
 
 Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->get('talent/applications/{id}',[\App\Http\Controllers\Talent\ApplicationWorkspaceController::class,'show'])->name('admin.talent.applications.show');
+
+Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->prefix('talent')->name('admin.talent.')->controller(\App\Http\Controllers\Talent\PlacementController::class)->group(function(){
+ Route::post('/applications/{id}/placements','store')->name('placements.store');
+ Route::patch('/placements/{id}/tasks/{taskId}','task')->name('placements.tasks.update');
+});
