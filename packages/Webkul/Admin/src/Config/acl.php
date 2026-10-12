@@ -1,6 +1,8 @@
 <?php
 
 return [
+    ['key'=>'talent.pools.create','name'=>'Create talent pools','route'=>'admin.talent.pools.store','sort'=>10],
+    ['key'=>'talent.pools.manage','name'=>'Manage pool membership','route'=>'admin.talent.pools.candidates.store','sort'=>11],
     ['key'=>'talent.interviews.create','name'=>'Schedule interviews','route'=>'admin.talent.interviews.store','sort'=>6],
     ['key'=>'talent.interviews.edit','name'=>'Manage interviews','route'=>'admin.talent.interviews.update','sort'=>7],
     ['key'=>'talent.offers.create','name'=>'Draft offers','route'=>'admin.talent.offers.store','sort'=>8],
