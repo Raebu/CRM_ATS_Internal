@@ -5,6 +5,7 @@ on:
       - 'app/Http/Controllers/Talent/**'
       - 'app/Models/Talent/**'
       - 'app/Services/Talent/**'
+      - 'app/Jobs/Talent/**'
       - 'database/migrations/2026_10_12_12*.php'
       - 'tests/**/Talent/**'
       - '.github/workflows/talent-php-checks.yml'
@@ -24,7 +25,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          find app/Http/Controllers/Talent app/Models/Talent app/Services/Talent tests/Feature/Talent tests/Unit/Talent -type f -name '*.php' -print0 |
+          find app/Http/Controllers/Talent app/Models/Talent app/Services/Talent app/Jobs/Talent tests/Feature/Talent tests/Unit/Talent -type f -name '*.php' -print0 |
             xargs -0 -n1 php -l
           for file in database/migrations/2026_10_12_12*.php; do php -l "$file"; done
   transitions:
@@ -43,7 +44,7 @@ jobs:
           cp .env.example .env
           php artisan key:generate --force
       - name: Run policy unit tests
-        run: vendor/bin/pest tests/Unit/Talent/RecruitmentTransitionsTest.php
+        run: vendor/bin/pest tests/Unit/Talent/RecruitmentTransitionsTest.php tests/Unit/Talent/TalentAuthorizationTest.php tests/Unit/Talent/ClamAvScannerTest.php
 
   mysql-integration:
     runs-on: ubuntu-latest
