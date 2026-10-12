@@ -34,3 +34,8 @@ Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->prefix('tale
  Route::post('/privacy','store')->name('privacy.store');
  Route::patch('/privacy/{id}','update')->name('privacy.update');
 });
+
+Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->prefix('talent')->name('admin.talent.')->controller(\App\Http\Controllers\Talent\NotificationInboxController::class)->group(function () {
+ Route::get('/notifications','index')->name('notifications.index');
+ Route::patch('/notifications/{id}/acknowledge','acknowledge')->name('notifications.acknowledge');
+});
