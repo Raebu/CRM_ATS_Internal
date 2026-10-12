@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Talent;
 
 use App\Http\Controllers\Controller;
 use App\Models\Talent\{Application,EmailDelivery,RecruitmentNotification,Tenant};
-use App\Services\Talent\{EmailDeliveryPlanner,EmailTemplateCatalog,EmailSnapshotIntegrity};
+use App\Services\Talent\{EmailDeliveryPlanner,EmailTemplateCatalog,EmailSnapshotIntegrity,RecruitmentEmailSender};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -31,6 +31,18 @@ class EmailReviewController extends Controller
   ]);
   $planner->draft($tenant->id,(int)$data['notification_id'],$data['template_key']);
   return back()->with('success','Draft created for review; no email sent.');
+ }
+
+ public function submit(int $id,RecruitmentEmailSender $sender)
+ {
+  $tenant=$this->tenant();
+  DB::transaction(function()use($id,$tenant,$sender){
+   $delivery=EmailDelivery::where('tenant_id',$tenant->id)->lockForUpdate()->findOrFail($id);
+   abort_unless($delivery->status==='approved',409);
+   $providerId=$sender->submit($delivery);
+   $delivery->update(['status'=>'submitted','provider_message_id'=>$providerId,'submitted_at'=>now()]);
+  });
+  return back()->with('success','Email accepted by provider; delivery is not yet confirmed.');
  }
 
  public function approve(Request $request,int $id)
