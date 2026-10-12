@@ -49,6 +49,36 @@
                 <select class="rounded border p-2" name="stage" aria-label="Application stage">@foreach(['applied','screening','review','shortlisted','interview','final_interview','offer','hired','rejected','withdrawn','on_hold','talent_pool'] as $stage)<option value="{{ $stage }}" @selected($application->stage===$stage)>{{ ucwords(str_replace('_',' ',$stage)) }}</option>@endforeach</select><button class="ml-2 underline">Save</button></form></td></tr>
             @empty<tr><td class="p-2" colspan="3">No applications yet</td></tr>@endforelse</tbody></table>
         </section>
+        <section class="rounded-lg bg-white p-5 dark:bg-gray-900">
+            <h2 class="mb-3 text-lg font-semibold dark:text-white">Interview scheduling & offer drafts</h2>
+            <p class="mb-4 text-gray-600">Select an application to schedule an interview or prepare a draft offer. These actions do not send external communications.</p>
+            @forelse($applications as $application)
+                <div class="mb-4 rounded border p-3 dark:text-white">
+                    <h3 class="font-semibold">{{ $application->candidate?->name }} — {{ $application->job?->title }}</h3>
+                    <div class="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-2">
+                        <form method="POST" action="{{ route('admin.talent.interviews.store',$application->id) }}" class="grid gap-2">
+                            @csrf
+                            <h4 class="font-medium">Schedule interview</h4>
+                            <input class="rounded border p-2" name="title" placeholder="Interview title" required>
+                            <label>Starts <input class="rounded border p-2" type="datetime-local" name="starts_at" required></label>
+                            <label>Ends <input class="rounded border p-2" type="datetime-local" name="ends_at" required></label>
+                            <input class="rounded border p-2" name="location" placeholder="Location / meeting details">
+                            <button class="primary-button">Schedule internally</button>
+                        </form>
+                        <form method="POST" action="{{ route('admin.talent.offers.store',$application->id) }}" class="grid gap-2">
+                            @csrf
+                            <h4 class="font-medium">Create offer draft</h4>
+                            <input class="rounded border p-2" type="number" min="0" step="0.01" name="salary_amount" placeholder="Salary (optional)">
+                            <input class="rounded border p-2" name="currency" value="GBP" maxlength="3" required>
+                            <textarea class="rounded border p-2" name="conditions" placeholder="Conditions (optional)"></textarea>
+                            <button class="primary-button">Save offer draft</button>
+                        </form>
+                    </div>
+                </div>
+            @empty
+                <p class="text-gray-600">Create an application to enable interviews and offers.</p>
+            @endforelse
+        </section>
         <section class="rounded-lg bg-white p-5 dark:bg-gray-900"><h2 class="mb-3 text-lg font-semibold dark:text-white">Candidates ({{ $candidates->count() }})</h2>
             <ul class="grid gap-2 dark:text-white">@forelse($candidates as $candidate)<li>{{ $candidate->name }} — {{ $candidate->email }}</li>@empty<li>No candidates yet</li>@endforelse</ul>
         </section>
