@@ -18,6 +18,8 @@ final class ApplicationWorkspaceController extends Controller
    'interviews'=>Interview::where('tenant_id',$tenant->id)->where('application_id',$id)->orderBy('starts_at')->get(),
    'offers'=>Offer::where('tenant_id',$tenant->id)->where('application_id',$id)->orderByDesc('version')->get(),
    'history'=>StageHistory::where('tenant_id',$tenant->id)->where('application_id',$id)->orderByDesc('id')->get(),
+   'placement'=>\Illuminate\Support\Facades\DB::table('talent_placements')->where('tenant_id',$tenant->id)->where('application_id',$id)->first(),
+   'placementTasks'=>\Illuminate\Support\Facades\DB::table('talent_placement_tasks')->where('tenant_id',$tenant->id)->whereIn('placement_id',function($query)use($tenant,$id){$query->select('id')->from('talent_placements')->where('tenant_id',$tenant->id)->where('application_id',$id);})->orderBy('id')->get(),
   ]);
  }
 }
