@@ -35,6 +35,27 @@
                 </form>
             </section>
         </div>
+        <section class="rounded-lg bg-white p-5 dark:bg-gray-900">
+            <h2 class="mb-3 text-lg font-semibold dark:text-white">Talent pools</h2>
+            <form method="POST" action="{{ route('admin.talent.pools.store') }}" class="mb-4 flex flex-wrap gap-2">@csrf
+                <input class="rounded border p-2" name="name" placeholder="Pool name" maxlength="255" required>
+                <button class="primary-button">Create pool</button>
+            </form>
+            @foreach($talentPools as $pool)
+                <form method="POST" action="{{ route('admin.talent.pools.candidates.store',$pool->id) }}" class="mb-2 flex flex-wrap items-center gap-2">@csrf
+                    <strong class="dark:text-white">{{ $pool->name }} ({{ $pool->candidates_count }})</strong>
+                    <select name="candidate_id" aria-label="Candidate for {{ $pool->name }}" class="rounded border p-2" required>
+                        <option value="">Select candidate</option>
+                        @foreach($candidates as $candidate)<option value="{{ $candidate->id }}">{{ $candidate->name }}</option>@endforeach
+                    </select>
+                    <button class="primary-button">Add</button>
+                </form>
+            @endforeach
+        </section>
+        <form method="GET" action="{{ route('admin.talent.index') }}" class="flex gap-2">
+            <input class="rounded border p-2" type="search" name="candidate_search" value="{{ request('candidate_search') }}" maxlength="255" placeholder="Search candidate name or email">
+            <button class="primary-button">Search candidates</button>
+        </form>
         <section class="overflow-x-auto rounded-lg bg-white p-5 dark:bg-gray-900">
             <h2 class="mb-3 text-lg font-semibold dark:text-white">Vacancies ({{ $jobs->count() }})</h2>
             <table class="w-full text-left dark:text-white"><thead><tr><th class="p-2">Vacancy</th><th class="p-2">Location</th><th class="p-2">Status</th></tr></thead><tbody>
