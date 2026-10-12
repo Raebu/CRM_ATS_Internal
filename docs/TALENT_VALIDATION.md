@@ -57,3 +57,8 @@ No tests from this checklist should be described as passed unless CI or a record
 - Tenant-scoped vacancy totals, published vacancies, application stages and source attribution added.
 - Integration test checks fixed Raeburn reporting excludes records from a second tenant; policy test checks `talent.analytics.view` is separate from base Talent access.
 - Reporting does not imply general multitenancy: user membership is still fixed to the Raeburn tenant. Conversion funnels, time-to-hire and attribution quality checks remain outstanding.
+
+## Funnel analytics extension
+- Native reports now include tenant-scoped interview count, offer count and accepted-offer count.
+- Tenant isolation test creates matching interview and offer data in two separate tenants and expects only the Raeburn records in reporting.
+- These metrics count records, not distinct candidates, funnel conversion percentages, time-to-hire or confirmed external acceptances. Production reporting remains disabled until release review.
