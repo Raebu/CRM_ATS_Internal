@@ -1,6 +1,7 @@
 <?php
 
 return [
+    ['key'=>'talent.documents.view','name'=>'View cleared candidate documents','route'=>'admin.talent.documents.download','sort'=>12],
     ['key'=>'talent.pools.create','name'=>'Create talent pools','route'=>'admin.talent.pools.store','sort'=>10],
     ['key'=>'talent.pools.manage','name'=>'Manage pool membership','route'=>'admin.talent.pools.candidates.store','sort'=>11],
     ['key'=>'talent.interviews.create','name'=>'Schedule interviews','route'=>'admin.talent.interviews.store','sort'=>6],
