@@ -14,7 +14,7 @@ class TalentController extends Controller
     private function tenant(): Tenant
     {
         // Phase-one single-tenant instance. Never accept a tenant ID from the request.
-        return Tenant::firstOrCreate(['slug' => 'raeburn-group'], ['name' => 'The Raeburn Group']);
+        return Tenant::where('slug', 'raeburn-group')->firstOrFail();
     }
 
     public function index()
@@ -65,7 +65,7 @@ class TalentController extends Controller
         ]);
         $tenant = $this->tenant();
         $data['email'] = Str::lower($data['email']);
-        $request->validate(['email'=>Rule::unique('talent_candidates','email')->where('tenant_id',$tenant->id)]);
+        validator($data, ['email' => [Rule::unique('talent_candidates','email')->where('tenant_id',$tenant->id)]])->validate();
         DB::transaction(function () use ($tenant,$data) {
             $candidate = Candidate::create($data + ['tenant_id'=>$tenant->id]);
             $this->event($tenant->id,'candidate.created.v1','candidate',$candidate->id,[]);
