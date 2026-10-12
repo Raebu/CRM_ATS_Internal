@@ -69,7 +69,7 @@
         <section class="overflow-x-auto rounded-lg bg-white p-5 dark:bg-gray-900">
             <h2 class="mb-3 text-lg font-semibold dark:text-white">Applications ({{ $applications->count() }})</h2>
             <table class="w-full text-left dark:text-white"><thead><tr><th class="p-2">Candidate</th><th class="p-2">Vacancy</th><th class="p-2">Stage</th></tr></thead><tbody>
-            @forelse($applications as $application)<tr class="border-t"><td class="p-2">{{ $application->candidate?->name }}</td><td class="p-2">{{ $application->job?->title }}</td><td class="p-2"><form method="POST" action="{{ route('admin.talent.applications.update',$application->id) }}">@csrf @method('PATCH')
+            @forelse($applications as $application)<tr class="border-t"><td class="p-2"><a class="underline" href="{{ route('admin.talent.applications.show',$application->id) }}">{{ $application->candidate?->name }}</a></td><td class="p-2">{{ $application->job?->title }}</td><td class="p-2"><form method="POST" action="{{ route('admin.talent.applications.update',$application->id) }}">@csrf @method('PATCH')
                 <select class="rounded border p-2" name="stage" aria-label="Application stage">@foreach(['applied','screening','review','shortlisted','interview','final_interview','offer','hired','rejected','withdrawn','on_hold','talent_pool'] as $stage)<option value="{{ $stage }}" @selected($application->stage===$stage)>{{ ucwords(str_replace('_',' ',$stage)) }}</option>@endforeach</select><button class="ml-2 underline">Save</button></form></td></tr>
             @empty<tr><td class="p-2" colspan="3">No applications yet</td></tr>@endforelse</tbody></table>
         </section>
