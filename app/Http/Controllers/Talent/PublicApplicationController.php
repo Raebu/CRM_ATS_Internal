@@ -61,7 +61,7 @@ class PublicApplicationController extends Controller
     DomainEvent::create([
      'tenant_id'=>$tenant->id,'event_id'=>(string)Str::uuid(),'event_type'=>'application.created.v1',
      'event_version'=>1,'aggregate_type'=>'application','aggregate_id'=>$application->id,
-     'payload'=>['job_id'=>$job->id,'candidate_id'=>$candidate->id]
+     'payload'=>['application_id'=>$application->id,'job_id'=>$job->id,'candidate_id'=>$candidate->id]
     ]);
    },3);
   }catch(\Throwable $e) {
