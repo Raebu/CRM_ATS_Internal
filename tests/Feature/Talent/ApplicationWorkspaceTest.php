@@ -21,7 +21,7 @@ class ApplicationWorkspaceTest extends TestCase
   $job=Job::create(['tenant_id'=>$tenant->id,'slug'=>'synthetic-vacancy','title'=>'Synthetic Engineer','description'=>'Testing']);
   $application=Application::create(['tenant_id'=>$tenant->id,'candidate_id'=>$candidate->id,'job_id'=>$job->id,'stage'=>'applied']);
   StageHistory::create(['tenant_id'=>$tenant->id,'application_id'=>$application->id,'from_stage'=>null,'to_stage'=>'applied','actor_id'=>$user->id]);
-  Interview::create(['tenant_id'=>$tenant->id,'application_id'=>$application->id,'title'=>'First interview','starts_at'=>now()->addDay(),'ends_at'=>now()->addDay()->addHour()]);
+  $interview=Interview::create(['tenant_id'=>$tenant->id,'application_id'=>$application->id,'title'=>'First interview','starts_at'=>now()->addDay(),'ends_at'=>now()->addDay()->addHour()]);
   Offer::create(['tenant_id'=>$tenant->id,'application_id'=>$application->id,'version'=>1,'currency'=>'GBP','salary_amount'=>1000,'status'=>'draft']);
   $this->actingAs($user,'user');
   $this->get(route('admin.talent.applications.show',$application->id))
@@ -30,6 +30,9 @@ class ApplicationWorkspaceTest extends TestCase
    ->assertSee('Synthetic Engineer')
    ->assertSee('First interview')
    ->assertSee('New offer draft');
+  $this->get(route('admin.talent.interviews.calendar',$interview->id))
+   ->assertOk()->assertHeader('Content-Type','text/calendar; charset=utf-8')
+   ->assertSee('BEGIN:VCALENDAR');
  }
 
  public function test_another_tenants_application_cannot_be_loaded():void
