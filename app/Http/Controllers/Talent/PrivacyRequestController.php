@@ -90,6 +90,16 @@ class PrivacyRequestController extends Controller
                 'resolution_notes'=>$data['resolution_notes']??null,
                 'identity_evidence_reviewed_at'=>$data['status']==='identity_verified'?now():$entry->identity_evidence_reviewed_at,
             ]);
+            DB::table('talent_privacy_status_history')->insert([
+                'tenant_id'=>$tenant->id,
+                'privacy_request_id'=>$entry->id,
+                'previous_status'=>$previous,
+                'new_status'=>$entry->status,
+                'actor_id'=>auth()->guard('user')->id(),
+                'resolution_code'=>$data['resolution_code']??null,
+                'resolution_notes'=>$data['resolution_notes']??null,
+                'changed_at'=>now(),
+            ]);
             DomainEvent::create([
                 'tenant_id'=>$tenant->id,'event_id'=>(string)Str::uuid(),
                 'event_type'=>'privacy.request_status_changed.v1','event_version'=>1,
