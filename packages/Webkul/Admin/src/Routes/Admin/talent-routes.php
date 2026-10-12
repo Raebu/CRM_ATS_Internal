@@ -46,6 +46,7 @@ Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->prefix('tale
  Route::get('/review','index')->name('index');
  Route::post('/drafts','draft')->name('draft');
  Route::post('/drafts/{id}/approve','approve')->name('approve');
+ Route::post('/drafts/{id}/submit','submit')->name('submit');
 });
 
 Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->get('talent/applications/{id}',[\App\Http\Controllers\Talent\ApplicationWorkspaceController::class,'show'])->name('admin.talent.applications.show');
