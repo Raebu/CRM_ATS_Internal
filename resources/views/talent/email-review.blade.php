@@ -10,7 +10,7 @@
 <tr><td>{{ $delivery->id }}</td><td>{{ $delivery->template_key }}</td><td>{{ $delivery->status }}</td>
 <td>@if($delivery->status==='draft')
 <form method="POST" action="{{ route('admin.talent.email.approve',$delivery->id) }}">@csrf
-<input type="email" name="recipient_email" aria-label="Verified recipient email" required maxlength="255" placeholder="Verified recipient">
+<span>Recipient derived from the existing application record</span>
 <button type="submit">Approve only</button></form>@endif</td></tr>
 @empty<tr><td colspan="4">No drafts yet</td></tr>@endforelse
 </tbody></table>{{ $deliveries->links() }}
