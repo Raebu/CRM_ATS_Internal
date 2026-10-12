@@ -2,6 +2,7 @@
     <x-slot:title>Raeburn Talent</x-slot:title>
     <div class="grid gap-5 p-2">
         <h1 class="text-2xl font-bold dark:text-white">Raeburn Talent</h1>
+        <a href="{{ route('admin.talent.analytics.index') }}" class="underline">Recruitment analytics</a>
         <a href="{{ route('admin.talent.privacy.index') }}" class="underline">Privacy requests (restricted)</a>
         <a href="{{ route('admin.talent.notifications.index') }}" class="underline">Notification inbox (restricted)</a>
         <p class="text-gray-600 dark:text-gray-300">Native recruitment workspace — vacancies, candidates and applications</p>
