@@ -50,6 +50,9 @@ class TalentController extends Controller
         $tenant = $this->tenant();
         $job = Job::where('tenant_id', $tenant->id)->findOrFail($id);
         $data = $request->validate(['status'=>['required',Rule::in(['draft','ready','published','paused','closed','archived'])]]);
+        if ($data['status']==='published' && !config('talent.job_publishing_enabled',false)) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['status'=>'Job publishing is disabled until approval and compliance controls are verified.']);
+        }
         DB::transaction(function () use ($tenant,$job,$data) {
             $previous = $job->status;
             $job->update(['status'=>$data['status'], 'published_at'=>$data['status']==='published' ? ($job->published_at ?? now()) : $job->published_at]);
