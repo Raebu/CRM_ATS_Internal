@@ -33,7 +33,6 @@ class RecruitmentAccessTest extends TestCase
     public function test_user_without_talent_permission_cannot_see_recruitment_dashboard(): void
     {
         $this->withoutMiddleware(CanInstall::class);
-        $this->withoutExceptionHandling();
         $this->actingAs($this->recruiter(['dashboard']),'user');
         $response=$this->get(route('admin.talent.index'));
         $this->assertContains($response->status(),[401,403]);
