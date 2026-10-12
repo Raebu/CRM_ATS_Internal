@@ -1,6 +1,9 @@
 <?php
 
 return [
+ ['key'=>'talent.email.view','name'=>'Review recruitment email drafts','route'=>'admin.talent.email.index','sort'=>19],
+ ['key'=>'talent.email.create','name'=>'Create recruitment email drafts','route'=>'admin.talent.email.draft','sort'=>20],
+ ['key'=>'talent.email.approve','name'=>'Approve recruitment email drafts','route'=>'admin.talent.email.approve','sort'=>21],
  ['key'=>'talent.analytics.view','name'=>'View recruitment analytics','route'=>'admin.talent.analytics.index','sort'=>18],
  ['key'=>'talent.notifications.view','name'=>'View recruitment notifications','route'=>'admin.talent.notifications.index','sort'=>16],
  ['key'=>'talent.notifications.manage','name'=>'Acknowledge recruitment notifications','route'=>'admin.talent.notifications.acknowledge','sort'=>17],
