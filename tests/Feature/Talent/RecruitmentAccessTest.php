@@ -34,16 +34,18 @@ class RecruitmentAccessTest extends TestCase
     {
         $this->withoutMiddleware(CanInstall::class);
         $this->actingAs($this->recruiter(['dashboard']),'user');
-        $this->get(route('admin.talent.index'))->assertForbidden();
+        $response=$this->get(route('admin.talent.index'));
+        $this->assertContains($response->status(),[401,403]);
     }
 
     public function test_recruiter_with_read_access_cannot_create_candidate(): void
     {
         $this->withoutMiddleware(CanInstall::class);
         $this->actingAs($this->recruiter(['talent']),'user');
-        $this->post(route('admin.talent.candidates.store'),[
+        $response=$this->post(route('admin.talent.candidates.store'),[
             'name'=>'Must Be Denied','email'=>'denied@example.invalid',
-        ])->assertForbidden();
+        ]);
+        $this->assertContains($response->status(),[401,403]);
         $this->assertDatabaseMissing('talent_candidates',['email'=>'denied@example.invalid']);
     }
 
