@@ -1,6 +1,7 @@
 <?php
 
 return [
+ ['key'=>'talent.analytics.view','name'=>'View recruitment analytics','route'=>'admin.talent.analytics.index','sort'=>18],
  ['key'=>'talent.notifications.view','name'=>'View recruitment notifications','route'=>'admin.talent.notifications.index','sort'=>16],
  ['key'=>'talent.notifications.manage','name'=>'Acknowledge recruitment notifications','route'=>'admin.talent.notifications.acknowledge','sort'=>17],
  ['key'=>'talent.privacy.view','name'=>'Review privacy requests','route'=>'admin.talent.privacy.index','sort'=>13],
