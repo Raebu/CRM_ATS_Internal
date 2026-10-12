@@ -110,6 +110,9 @@ class TalentController extends Controller
             $locked = Application::where('tenant_id',$tenant->id)->lockForUpdate()->findOrFail($application->id);
             $old = $locked->stage;
             RecruitmentTransitions::application($old,$data['stage']);
+            if ($data['stage'] === 'hired') {
+                \App\Services\Talent\HiringEligibility::enforce($tenant->id, $locked->id);
+            }
             $locked->update($data);
             StageHistory::create(['tenant_id'=>$tenant->id,'application_id'=>$application->id,
                 'from_stage'=>$old,'to_stage'=>$locked->stage,
