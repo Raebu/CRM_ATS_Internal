@@ -11,8 +11,16 @@ The Raeburn Talent functional specification supplied 12 October 2026 is the requ
 - First-party event outbox entries in the same database transaction as writes; no dispatcher yet.
 - Basic first-touch source field on applications.
 
+## Additional development committed (not tested or deployed)
+- Versioned draft offers, salary/currency fields, internal interview scheduling and status changes.
+- Stage transition history with user actor IDs.
+- Event-outbox writes for interview and offer operations.
+- Basic internal recruitment forms and Krayin ACL route mappings.
+
+These controls are scaffolding, not a full offer-approval/acceptance workflow. Scheduling currently creates internal records only, not calendar invitations. Before enabling production use, enforce permitted stage transitions, role-based authorisation, cross-tenant tests, offer approval rules, concurrency-safe versioning and complete activity audit trails.
+
 ## NOT implemented yet
-External candidate application submission, public careers pages, approvals, public vacancy publication, interview scheduling, offers, assessments, private CV storage and malware scanning, tenant-specific access/RBAC, robust organisation-level tenant context, board integrations, attribution history, integrations, queue consumers, notifications, audit actors, granular permissions, privacy/DSAR/retention, analytics, AI, feature flags, billing, and full security tests.
+External candidate application submission, public careers pages, approvals, public vacancy publication, complete interview scheduling integrations, complete offer approvals/acceptance, assessments, private CV storage and malware scanning, tenant-specific access/RBAC, robust organisation-level tenant context, board integrations, attribution history, integrations, queue consumers, notifications, audit actors, granular permissions, privacy/DSAR/retention, analytics, AI, feature flags, billing, and full security tests.
 
 ## Release safety
 Never run migrations automatically on the live VPS. Deploy through a reviewable PR. Back up the production database and files before applying migrations. Validate tenant authorisation and private-record access before adding real candidate data. The CRM administrator password was exposed in an earlier chat and must be rotated before rollout.
