@@ -25,7 +25,7 @@ class RecruitmentOperationsController extends Controller
   $tenant=$this->tenant(); $application=$this->application($id,$tenant->id);
   $data=$request->validate([
    'title'=>['required','string','max:255'],
-   'starts_at'=>['required','date'],
+   'starts_at'=>['required','date','after:now'],
    'ends_at'=>['required','date','after:starts_at'],
    'location'=>['nullable','string','max:255'],
   ]);
@@ -39,13 +39,16 @@ class RecruitmentOperationsController extends Controller
   $tenant=$this->tenant(); $interview=Interview::where('tenant_id',$tenant->id)->findOrFail($id);
   $data=$request->validate([
    'status'=>['required',Rule::in(['scheduled','completed','cancelled'])],
-   'starts_at'=>['sometimes','required','date'],
+   'starts_at'=>['sometimes','required','date','after:now'],
    'ends_at'=>['sometimes','required','date','after:starts_at'],
   ]);
   if(array_key_exists('starts_at',$data) !== array_key_exists('ends_at',$data)) {
    throw \Illuminate\Validation\ValidationException::withMessages(['starts_at'=>'Both start and end must be provided when rescheduling.']);
   }
   DB::transaction(function()use($tenant,$interview,$data){
+   if(isset($data['starts_at']) && $data['status']!=='scheduled') {
+    throw \Illuminate\Validation\ValidationException::withMessages(['status'=>'Only scheduled interviews can be rescheduled.']);
+   }
    $locked=Interview::where('tenant_id',$tenant->id)->lockForUpdate()->findOrFail($interview->id);
    $priorStart=$locked->starts_at?->toIso8601String();
    $priorStatus=$locked->status;
@@ -77,6 +80,10 @@ class RecruitmentOperationsController extends Controller
  public function updateOffer(Request $request,int $id) {
   $tenant=$this->tenant(); $offer=Offer::where('tenant_id',$tenant->id)->findOrFail($id);
   $data=$request->validate(['status'=>['required',Rule::in(['draft','pending_approval','approved','sent','accepted','declined','withdrawn'])]]);
+  // A status label cannot stand in for a verified communication provider receipt.
+  if ($data['status']==='sent' && !config('talent.offer_delivery_enabled',false)) {
+   throw \Illuminate\Validation\ValidationException::withMessages(['status'=>'Offer delivery is disabled until verified dispatch evidence is integrated.']);
+  }
   // Candidate acceptance requires a verified candidate-facing acceptance workflow.
   if ($data['status']==='accepted' && !config('talent.verified_offer_acceptance_enabled',false)) {
    throw \Illuminate\Validation\ValidationException::withMessages(['status'=>'Verified candidate acceptance is not enabled.']);
