@@ -2,6 +2,42 @@
 
 return [
     [
+        'key' => 'talent',
+        'name' => 'Raeburn Talent',
+        'route' => 'admin.talent.index',
+        'sort' => 7,
+    ],
+    [
+        'key' => 'talent.jobs.create',
+        'name' => 'Create vacancies',
+        'route' => 'admin.talent.jobs.store',
+        'sort' => 1,
+    ],
+    [
+        'key' => 'talent.jobs.edit',
+        'name' => 'Manage vacancy statuses',
+        'route' => 'admin.talent.jobs.update',
+        'sort' => 2,
+    ],
+    [
+        'key' => 'talent.candidates.create',
+        'name' => 'Create candidate profiles',
+        'route' => 'admin.talent.candidates.store',
+        'sort' => 3,
+    ],
+    [
+        'key' => 'talent.applications.create',
+        'name' => 'Record applications',
+        'route' => 'admin.talent.applications.store',
+        'sort' => 4,
+    ],
+    [
+        'key' => 'talent.applications.edit',
+        'name' => 'Change application stage',
+        'route' => 'admin.talent.applications.update',
+        'sort' => 5,
+    ],
+    [
         'key' => 'dashboard',
         'name' => 'admin::app.layouts.dashboard',
         'route' => 'admin.dashboard.index',
