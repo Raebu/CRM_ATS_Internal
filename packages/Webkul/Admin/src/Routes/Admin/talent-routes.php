@@ -39,3 +39,5 @@ Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->prefix('tale
  Route::get('/notifications','index')->name('notifications.index');
  Route::patch('/notifications/{id}/acknowledge','acknowledge')->name('notifications.acknowledge');
 });
+
+Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->get('talent/analytics', [\App\Http\Controllers\Talent\TalentAnalyticsController::class, 'index'])->name('admin.talent.analytics.index');
