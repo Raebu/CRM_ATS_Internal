@@ -102,3 +102,8 @@ No tests from this checklist should be described as passed unless CI or a record
 - Newly created application events now carry the canonical application_id; notification projection retains it for recipient resolution.
 - Other template/kind combinations, legacy notification rows without a canonical application id, and invalid candidate emails fail closed at approval. External delivery still disabled.
 - Remaining: candidate email verification/ownership proof, consent and lawful-basis review, template version locking, approval revocation, email send adapter, and comprehensive authenticated HTTP approval tests.
+
+## Email approval integrity gate
+- Approval now verifies the stored versioned template snapshot and SHA-256 checksum; missing or modified snapshots are rejected before a draft can be approved.
+- Database feature tests assert that untampered drafts validate, and modified snapshot subjects fail validation.
+- Snapshot hashes are integrity checks against accidental or unauthorised field edits, not digital signatures or tamper-proof audit records. Approval auditing, verified contact ownership and external email delivery are still unfinished.
