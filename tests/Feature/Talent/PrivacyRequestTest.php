@@ -18,5 +18,6 @@ class PrivacyRequestTest extends TestCase
   ]);
   $this->assertSame('pending_verification',$request->fresh()->status);
   $this->assertNull($request->fresh()->resolved_at);
+  $this->assertNull($request->fresh()->resolution_code);
  }
 }
