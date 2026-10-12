@@ -27,13 +27,30 @@ class HiringEligibilityTest extends TestCase
   $this->assertDatabaseHas('talent_applications',['id'=>$application->id,'stage'=>'offer']);
  }
 
+ public function test_authenticated_hiring_succeeds_with_accepted_offer():void
+ {
+  $this->withoutMiddleware(CanInstall::class);
+  $role=Role::create(['name'=>'Placement test role','permission_type'=>'all','permissions'=>[]]);
+  $user=User::create(['name'=>'Placement Tester','email'=>'placement-'.uniqid().'@example.invalid','password'=>bcrypt('test-password'),'role_id'=>$role->id,'status'=>1]);
+  $tenant=Tenant::firstOrCreate(['slug'=>'raeburn-group'],['name'=>'The Raeburn Group']);
+  $candidate=Candidate::create(['tenant_id'=>$tenant->id,'name'=>'Placed Candidate','email'=>'placed@example.invalid']);
+  $job=Job::create(['tenant_id'=>$tenant->id,'title'=>'Placement Role','slug'=>'placement-role','description'=>'Testing']);
+  $application=Application::create(['tenant_id'=>$tenant->id,'job_id'=>$job->id,'candidate_id'=>$candidate->id,'stage'=>'offer']);
+  Offer::create(['tenant_id'=>$tenant->id,'application_id'=>$application->id,'version'=>1,'currency'=>'GBP','status'=>'accepted']);
+  $this->actingAs($user,'user');
+  $this->patch(route('admin.talent.applications.update',$application->id),['stage'=>'hired'])->assertRedirect();
+  $this->assertDatabaseHas('talent_applications',['id'=>$application->id,'stage'=>'hired']);
+  $this->assertDatabaseHas('talent_stage_history',['application_id'=>$application->id,'to_stage'=>'hired']);
+ }
+
  public function test_offer_for_another_application_does_not_authorize_hiring():void
  {
   $tenant=Tenant::firstOrCreate(['slug'=>'raeburn-group'],['name'=>'The Raeburn Group']);
   $candidate=Candidate::create(['tenant_id'=>$tenant->id,'name'=>'Second Candidate','email'=>'second@example.invalid']);
   $job=Job::create(['tenant_id'=>$tenant->id,'title'=>'Second Role','slug'=>'second-role','description'=>'Testing']);
   $a=Application::create(['tenant_id'=>$tenant->id,'job_id'=>$job->id,'candidate_id'=>$candidate->id,'stage'=>'offer']);
-  $other=Application::create(['tenant_id'=>$tenant->id,'job_id'=>$job->id,'candidate_id'=>$candidate->id,'stage'=>'offer']);
+  $otherJob=Job::create(['tenant_id'=>$tenant->id,'title'=>'Other Role','slug'=>'other-role','description'=>'Testing']);
+  $other=Application::create(['tenant_id'=>$tenant->id,'job_id'=>$otherJob->id,'candidate_id'=>$candidate->id,'stage'=>'offer']);
   Offer::create(['tenant_id'=>$tenant->id,'application_id'=>$other->id,'version'=>1,'currency'=>'GBP','status'=>'accepted']);
   $this->expectException(ValidationException::class);
   HiringEligibility::enforce($tenant->id,$a->id);
