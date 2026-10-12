@@ -15,6 +15,8 @@ class TalentAuthorization
     private const PERMISSIONS = [
         'admin.talent.index' => 'talent',
         'admin.talent.applications.show' => 'talent.candidates.view',
+        'admin.talent.placements.store' => 'talent.placements.manage',
+        'admin.talent.placements.tasks.update' => 'talent.placements.manage',
         'admin.talent.email.index' => 'talent.email.view',
         'admin.talent.email.draft' => 'talent.email.create',
         'admin.talent.email.approve' => 'talent.email.approve',
