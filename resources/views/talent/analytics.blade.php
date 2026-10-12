@@ -21,4 +21,12 @@
 <h2 class="font-semibold">Sources</h2>
 <ul>@forelse($sources as $source=>$count)<li>{{ $source ?: 'Unspecified' }}: {{ number_format($count) }}</li>@empty<li>No source records</li>@endforelse</ul>
 </section>
+<section class="rounded bg-white p-4 dark:bg-gray-900 dark:text-white">
+<h2 class="font-semibold">Application funnel</h2>
+<p>Applications with interviews: {{ $interviewConversion === null ? 'N/A' : $interviewConversion.'%' }}</p>
+<p>Applications with offers: {{ $offerConversion === null ? 'N/A' : $offerConversion.'%' }}</p>
+<p>Offered applications with an accepted offer: {{ $acceptanceConversion === null ? 'N/A' : $acceptanceConversion.'%' }}</p>
+<p>Average application-to-accepted-offer time: {{ $averageTimeToAcceptedOfferDays === null ? 'N/A' : $averageTimeToAcceptedOfferDays.' days' }}</p>
+<p>Metrics count distinct applications. Accepted offer time is not equivalent to an employee start date.</p>
+</section>
 </div></x-admin::layouts>
