@@ -67,7 +67,7 @@ class RecruitmentOperationsController extends Controller
    RecruitmentTransitions::offer($previous,$data['status']);
    $locked->update(['status'=>$data['status'],
     'accepted_at'=>$data['status']==='accepted' ? now() : $locked->accepted_at]);
-   $this->record($tenant->id,'offer.status_changed.v1','offer',$offer->id,['previous'=>$previous,'status'=>$offer->status]);
+   $this->record($tenant->id,'offer.status_changed.v1','offer',$offer->id,['previous'=>$previous,'status'=>$locked->status]);
   });
   return back()->with('success','Offer updated.');
  }
