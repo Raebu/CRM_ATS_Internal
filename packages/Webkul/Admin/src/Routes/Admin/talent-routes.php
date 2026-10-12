@@ -24,3 +24,7 @@ Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->prefix('tale
     Route::post('/pools','store')->name('pools.store');
     Route::post('/pools/{id}/candidates','addCandidate')->name('pools.candidates.store');
 });
+
+Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->prefix('talent')->name('admin.talent.')->group(function () {
+    Route::get('/documents/{id}/download', [\App\Http\Controllers\Talent\DocumentController::class, 'download'])->name('documents.download');
+});
