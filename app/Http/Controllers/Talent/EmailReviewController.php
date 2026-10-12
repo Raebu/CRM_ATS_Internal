@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Talent;
 
 use App\Http\Controllers\Controller;
 use App\Models\Talent\{Application,EmailDelivery,RecruitmentNotification,Tenant};
-use App\Services\Talent\{EmailDeliveryPlanner,EmailTemplateCatalog};
+use App\Services\Talent\{EmailDeliveryPlanner,EmailTemplateCatalog,EmailSnapshotIntegrity};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -41,6 +41,7 @@ class EmailReviewController extends Controller
   DB::transaction(function()use($tenant,$id){
    $delivery=EmailDelivery::where('tenant_id',$tenant->id)->lockForUpdate()->findOrFail($id);
    abort_unless($delivery->status==='draft',409);
+   abort_unless(EmailSnapshotIntegrity::valid($delivery),409);
    $notice=RecruitmentNotification::where('tenant_id',$tenant->id)->findOrFail($delivery->notification_id);
    abort_unless($notice->status==='pending',409);
    abort_unless($delivery->template_key==='application_acknowledgement' && $notice->kind==='new_application',409);
