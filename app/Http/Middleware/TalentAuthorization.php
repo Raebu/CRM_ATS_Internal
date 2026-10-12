@@ -14,6 +14,8 @@ class TalentAuthorization
 {
     private const PERMISSIONS = [
         'admin.talent.index' => 'talent',
+        'admin.talent.notifications.index' => 'talent.notifications.view',
+        'admin.talent.notifications.acknowledge' => 'talent.notifications.manage',
         'admin.talent.privacy.index' => 'talent.privacy.view',
         'admin.talent.privacy.store' => 'talent.privacy.create',
         'admin.talent.privacy.update' => 'talent.privacy.manage',
