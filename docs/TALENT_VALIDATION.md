@@ -90,3 +90,9 @@ No tests from this checklist should be described as passed unless CI or a record
 - Added static candidate-acknowledgement and interview-reminder email template drafts and an idempotent, tenant-scoped email delivery draft planner.
 - No sending function or provider API is wired; `TALENT_EXTERNAL_EMAIL_ENABLED` defaults false. Delivery rows remain `draft`, not `sent`.
 - MySQL tests assert draft deduplication and tenant isolation. Before rollout: verified recipients, lawful messaging rules, human approval, content review, send adapter with provider idempotency, retry/error audit, opt-outs where required, and actual end-to-end tests.
+
+## Human email review and approval
+- Added restricted email-draft listing, draft creation, and approval actions with separate read/create/approve ACL entries.
+- Approval stores an entered recipient address, approving administrator and approval timestamp. Input validation checks email format, NOT ownership, identity or candidate association.
+- No outbound send code is connected and the external email feature flag remains false.
+- Before rollout: bind verified candidate contact details to the correct notification/application, prohibit arbitrary recipient input, lock template versions, audit approvals, handle revocation and sender restrictions, and test full authenticated HTTP authorisation.
