@@ -21,6 +21,12 @@ class RecruitmentOperationsController extends Controller
    'event_type'=>$type,'event_version'=>1,'aggregate_type'=>$aggregate,
    'aggregate_id'=>$id,'payload'=>$payload]);
  }
+ public function calendar(int $id) {
+  $tenant=$this->tenant();
+  $interview=Interview::where('tenant_id',$tenant->id)->findOrFail($id);
+  $body=\App\Services\Talent\InterviewCalendarInvite::generate($interview);
+  return response($body,200,['Content-Type'=>'text/calendar; charset=utf-8','Content-Disposition'=>'attachment; filename="interview-'.$interview->id.'.ics"','Cache-Control'=>'no-store']);
+ }
  public function storeInterview(Request $request,int $id) {
   $tenant=$this->tenant(); $application=$this->application($id,$tenant->id);
   $data=$request->validate([
