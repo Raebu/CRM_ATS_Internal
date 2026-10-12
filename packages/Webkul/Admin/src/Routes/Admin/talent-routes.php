@@ -41,3 +41,9 @@ Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->prefix('tale
 });
 
 Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->get('talent/analytics', [\App\Http\Controllers\Talent\TalentAnalyticsController::class, 'index'])->name('admin.talent.analytics.index');
+
+Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->prefix('talent/email')->name('admin.talent.email.')->controller(\App\Http\Controllers\Talent\EmailReviewController::class)->group(function(){
+ Route::get('/review','index')->name('index');
+ Route::post('/drafts','draft')->name('draft');
+ Route::post('/drafts/{id}/approve','approve')->name('approve');
+});
