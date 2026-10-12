@@ -62,3 +62,9 @@ No tests from this checklist should be described as passed unless CI or a record
 - Native reports now include tenant-scoped interview count, offer count and accepted-offer count.
 - Tenant isolation test creates matching interview and offer data in two separate tenants and expects only the Raeburn records in reporting.
 - These metrics count records, not distinct candidates, funnel conversion percentages, time-to-hire or confirmed external acceptances. Production reporting remains disabled until release review.
+
+## Conversion and duration metrics
+- Interview/application and offer/application conversion count distinct applications, preventing multiple interview/offer versions from inflating their numerators.
+- Accepted-offer ratio uses distinct applications with an accepted offer divided by distinct offered applications.
+- Average duration uses submitted_at to accepted_at for accepted offer rows with chronological timestamps. It measures time to accepted offer, **not** time-to-hire or actual employment start. The same application can contribute multiple rows if multiple offers are marked accepted; that requires a later data-integrity rule.
+- Zero denominator shows N/A. New analytics regression assertions are covered by the MySQL feature test pipeline.
