@@ -58,3 +58,8 @@ There is no claim that this checklist or the earlier scaffold completes the prod
 - A tenant-scoped PrivacyExportAssembler can produce a **staff-only in-memory review manifest** of a candidate's basic profile, applications and document metadata, provided an access request has a recorded verified state and timestamp.
 - The assembler is not an HTTP route or public download. No actual candidate document content is included. It does not establish whether identity evidence is genuine, inventory all disclosures, perform redaction, assess exemptions, or deliver a subject-access response.
 - Negative tests cover unverified and cross-tenant requests. Actual authorised, complete export/disclosure and erasure workflows remain unimplemented stop-ship requirements.
+
+## Interview and offer release safeguards
+- Interview creation and explicit rescheduling now require future start times; rescheduling cannot simultaneously change the interview to completed/cancelled.
+- Offer status 'sent' is blocked while `TALENT_OFFER_DELIVERY_ENABLED` is false (default). Existing 'accepted' status remains disabled pending verified candidate action. A real provider-backed delivery receipt and signed, expiring acceptance flow are needed before either is enabled.
+- This is a release safety improvement, **not** verified candidate acceptance or integrated email/calendar delivery.
