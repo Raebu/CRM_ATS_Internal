@@ -61,6 +61,10 @@ class RecruitmentOperationsController extends Controller
  public function updateOffer(Request $request,int $id) {
   $tenant=$this->tenant(); $offer=Offer::where('tenant_id',$tenant->id)->findOrFail($id);
   $data=$request->validate(['status'=>['required',Rule::in(['draft','pending_approval','approved','sent','accepted','declined','withdrawn'])]]);
+  // Candidate acceptance requires a verified candidate-facing acceptance workflow.
+  if ($data['status']==='accepted' && !config('talent.verified_offer_acceptance_enabled',false)) {
+   throw \Illuminate\Validation\ValidationException::withMessages(['status'=>'Verified candidate acceptance is not enabled.']);
+  }
   DB::transaction(function()use($tenant,$offer,$data){
    $locked=Offer::where('tenant_id',$tenant->id)->lockForUpdate()->findOrFail($offer->id);
    $previous=$locked->status;
