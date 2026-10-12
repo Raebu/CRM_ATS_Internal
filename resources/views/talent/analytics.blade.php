@@ -8,6 +8,11 @@
 <section class="rounded bg-white p-4 dark:bg-gray-900 dark:text-white">Published vacancies: {{ number_format($publishedJobs) }}</section>
 <section class="rounded bg-white p-4 dark:bg-gray-900 dark:text-white">Applications: {{ number_format($applications) }}</section>
 </div>
+<div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+<section class="rounded bg-white p-4 dark:bg-gray-900 dark:text-white">Interviews: {{ number_format($interviews) }}</section>
+<section class="rounded bg-white p-4 dark:bg-gray-900 dark:text-white">Offers: {{ number_format($offers) }}</section>
+<section class="rounded bg-white p-4 dark:bg-gray-900 dark:text-white">Accepted offers: {{ number_format($acceptedOffers) }}</section>
+</div>
 <section class="rounded bg-white p-4 dark:bg-gray-900 dark:text-white">
 <h2 class="font-semibold">Application stages</h2>
 <ul>@forelse($stages as $stage=>$count)<li>{{ $stage }}: {{ number_format($count) }}</li>@empty<li>No applications</li>@endforelse</ul>
