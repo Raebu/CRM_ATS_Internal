@@ -37,10 +37,25 @@ class RecruitmentOperationsController extends Controller
  }
  public function updateInterview(Request $request,int $id) {
   $tenant=$this->tenant(); $interview=Interview::where('tenant_id',$tenant->id)->findOrFail($id);
-  $data=$request->validate(['status'=>['required',Rule::in(['scheduled','completed','cancelled'])]]);
+  $data=$request->validate([
+   'status'=>['required',Rule::in(['scheduled','completed','cancelled'])],
+   'starts_at'=>['sometimes','required','date'],
+   'ends_at'=>['sometimes','required','date','after:starts_at'],
+  ]);
+  if(array_key_exists('starts_at',$data) !== array_key_exists('ends_at',$data)) {
+   throw \Illuminate\Validation\ValidationException::withMessages(['starts_at'=>'Both start and end must be provided when rescheduling.']);
+  }
   DB::transaction(function()use($tenant,$interview,$data){
-   $interview->update($data);
-   $this->record($tenant->id,'interview.status_changed.v1','interview',$interview->id,['status'=>$interview->status]);
+   $locked=Interview::where('tenant_id',$tenant->id)->lockForUpdate()->findOrFail($interview->id);
+   $priorStart=$locked->starts_at?->toIso8601String();
+   $priorStatus=$locked->status;
+   $locked->update($data);
+   $rescheduled=$priorStart !== $locked->starts_at?->toIso8601String();
+   $type=$rescheduled?'interview.rescheduled.v1':'interview.status_changed.v1';
+   $this->record($tenant->id,$type,'interview',$locked->id,[
+    'status'=>$locked->status,'previous_status'=>$priorStatus,
+    'starts_at'=>$locked->starts_at?->toIso8601String(),
+   ]);
   });
   return back()->with('success','Interview updated.');
  }
