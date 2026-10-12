@@ -22,3 +22,9 @@ No tests from this checklist should be described as passed unless CI or a record
 - Recruitment operations and talent-pool membership controllers now use the resolver for related records.
 - Added a regression test asserting records belonging to another tenant cannot be resolved. This integration test has not yet been executed in CI.
 - IMPORTANT: This is defense-in-depth, not full multi-tenancy. The application still uses a fixed Raeburn tenant; authenticated tenant membership, comprehensive authorisation, and constraints across every relation must be implemented before commercial tenant onboarding.
+
+## Dedicated recruitment permissions
+- Added fail-closed route middleware on each internal Talent route, independently of Krayin's menu ACL.
+- Admin roles with `permission_type=all` retain access; custom roles must carry the *exact* permission for each operation.
+- Unit tests cover simple allowed/denied role permission combinations, but complete authenticated HTTP denial tests are still required.
+- The Talent dashboard currently exposes names/emails to the `talent` permission; refine view permissions, field-level access and tenant membership before production recruitment data.
