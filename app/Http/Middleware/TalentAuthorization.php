@@ -14,6 +14,9 @@ class TalentAuthorization
 {
     private const PERMISSIONS = [
         'admin.talent.index' => 'talent',
+        'admin.talent.privacy.index' => 'talent.privacy.view',
+        'admin.talent.privacy.store' => 'talent.privacy.create',
+        'admin.talent.privacy.update' => 'talent.privacy.manage',
         'admin.talent.documents.download' => 'talent.documents.view',
         'admin.talent.jobs.store' => 'talent.jobs.create',
         'admin.talent.jobs.update' => 'talent.jobs.edit',
