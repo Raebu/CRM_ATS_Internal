@@ -1,6 +1,10 @@
 <?php
 
 return [
+    ['key'=>'talent.interviews.create','name'=>'Schedule interviews','route'=>'admin.talent.interviews.store','sort'=>6],
+    ['key'=>'talent.interviews.edit','name'=>'Manage interviews','route'=>'admin.talent.interviews.update','sort'=>7],
+    ['key'=>'talent.offers.create','name'=>'Draft offers','route'=>'admin.talent.offers.store','sort'=>8],
+    ['key'=>'talent.offers.edit','name'=>'Manage offers','route'=>'admin.talent.offers.update','sort'=>9],
     [
         'key' => 'talent',
         'name' => 'Raeburn Talent',
