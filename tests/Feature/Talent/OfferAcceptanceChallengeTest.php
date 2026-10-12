@@ -8,6 +8,11 @@ use Tests\TestCase;
 
 class OfferAcceptanceChallengeTest extends TestCase {
  use RefreshDatabase;
+ public function test_bad_token_format_is_rejected_before_database_lookup():void {
+  $service=app(OfferAcceptanceChallenge::class);
+  $this->assertFalse($service->validateChallenge(1,1,'short'));
+  $this->assertFalse($service->consume(1,1,str_repeat('!',64)));
+ }
  public function test_challenge_consumption_fails_closed_when_disabled():void {
   $this->assertFalse(app(OfferAcceptanceChallenge::class)->consume(1,1,str_repeat('A',64)));
   $this->assertFalse(app(OfferAcceptanceChallenge::class)->consume(1,1,'invalid'));
