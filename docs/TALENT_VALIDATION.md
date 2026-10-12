@@ -96,3 +96,9 @@ No tests from this checklist should be described as passed unless CI or a record
 - Approval stores an entered recipient address, approving administrator and approval timestamp. Input validation checks email format, NOT ownership, identity or candidate association.
 - No outbound send code is connected and the external email feature flag remains false.
 - Before rollout: bind verified candidate contact details to the correct notification/application, prohibit arbitrary recipient input, lock template versions, audit approvals, handle revocation and sender restrictions, and test full authenticated HTTP authorisation.
+
+## Recipient-binding hardening (12 October)
+- Removed free-form recipient entry from draft approval. Application acknowledgement approvals now derive the recipient email from the existing tenant-scoped application and its tenant-scoped candidate.
+- Newly created application events now carry the canonical application_id; notification projection retains it for recipient resolution.
+- Other template/kind combinations, legacy notification rows without a canonical application id, and invalid candidate emails fail closed at approval. External delivery still disabled.
+- Remaining: candidate email verification/ownership proof, consent and lawful-basis review, template version locking, approval revocation, email send adapter, and comprehensive authenticated HTTP approval tests.
