@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Talent;
 
 use App\Http\Controllers\Controller;
-use App\Models\Talent\{Application, Candidate, DomainEvent, Job, Tenant};
+use App\Models\Talent\{Application, Candidate, DomainEvent, Job, StageHistory, Tenant};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -97,6 +97,9 @@ class TalentController extends Controller
         DB::transaction(function () use ($tenant,$application,$data) {
             $old = $application->stage;
             $application->update($data);
+            StageHistory::create(['tenant_id'=>$tenant->id,'application_id'=>$application->id,
+                'from_stage'=>$old,'to_stage'=>$application->stage,
+                'actor_id'=>auth()->guard('user')->id()]);
             $this->event($tenant->id,'workflow.stage_changed.v1','application',$application->id,['previous'=>$old,'stage'=>$application->stage]);
         });
         return back()->with('success','Application stage updated.');
