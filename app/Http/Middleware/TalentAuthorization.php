@@ -33,6 +33,7 @@ class TalentAuthorization
         'admin.talent.candidates.store' => 'talent.candidates.create',
         'admin.talent.applications.store' => 'talent.applications.create',
         'admin.talent.applications.update' => 'talent.applications.edit',
+        'admin.talent.interviews.calendar' => 'talent.interviews.edit',
         'admin.talent.interviews.store' => 'talent.interviews.create',
         'admin.talent.interviews.update' => 'talent.interviews.edit',
         'admin.talent.offers.store' => 'talent.offers.create',
