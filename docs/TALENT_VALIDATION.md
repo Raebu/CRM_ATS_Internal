@@ -80,3 +80,8 @@ No tests from this checklist should be described as passed unless CI or a record
 - Reminder command now cancels pending inbox reminders for cancelled/completed/deleted or rescheduled interviews, or interviews already started.
 - Cancellation is applied when the command next runs; scheduler, email delivery and real-time rescind are not yet available.
 - MySQL integration test now exercises repeat runs and cancellation; awaiting fresh CI result.
+
+## Interview rescheduling safeguards
+- The internal interview update endpoint now accepts paired start/end times, validates ordering, and emits a distinct `interview.rescheduled.v1` record when the start changes.
+- Reminder integration test now checks that a reschedule cancels the old pending reminder and creates one for the new start time, then cancellation clears the remaining pending reminder.
+- No automatic external communications or scheduler are enabled. The new CI run must pass before relying on these changes.
