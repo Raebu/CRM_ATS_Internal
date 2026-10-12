@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Talent;
 
 use App\Http\Controllers\Controller;
+use App\Services\Talent\RecruitmentTransitions;
 use App\Models\Talent\{Application, Candidate, DomainEvent, Job, StageHistory, Tenant};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -84,6 +85,7 @@ class TalentController extends Controller
         $request->validate(['candidate_id'=>Rule::unique('talent_applications','candidate_id')->where('tenant_id',$tenant->id)->where('job_id',$data['job_id'])]);
         DB::transaction(function () use ($tenant,$data) {
             $application = Application::create($data + ['tenant_id'=>$tenant->id,'stage'=>'applied','submitted_at'=>now()]);
+            StageHistory::create(['tenant_id'=>$tenant->id,'application_id'=>$application->id,'from_stage'=>null,'to_stage'=>'applied','actor_id'=>auth()->guard('user')->id()]);
             $this->event($tenant->id,'application.created.v1','application',$application->id,['job_id'=>$application->job_id,'candidate_id'=>$application->candidate_id]);
         });
         return back()->with('success','Application recorded.');
@@ -95,12 +97,14 @@ class TalentController extends Controller
         $application = Application::where('tenant_id',$tenant->id)->findOrFail($id);
         $data = $request->validate(['stage'=>['required',Rule::in(['applied','screening','review','shortlisted','interview','final_interview','offer','hired','rejected','withdrawn','on_hold','talent_pool'])]]);
         DB::transaction(function () use ($tenant,$application,$data) {
-            $old = $application->stage;
-            $application->update($data);
+            $locked = Application::where('tenant_id',$tenant->id)->lockForUpdate()->findOrFail($application->id);
+            $old = $locked->stage;
+            RecruitmentTransitions::application($old,$data['stage']);
+            $locked->update($data);
             StageHistory::create(['tenant_id'=>$tenant->id,'application_id'=>$application->id,
-                'from_stage'=>$old,'to_stage'=>$application->stage,
+                'from_stage'=>$old,'to_stage'=>$locked->stage,
                 'actor_id'=>auth()->guard('user')->id()]);
-            $this->event($tenant->id,'workflow.stage_changed.v1','application',$application->id,['previous'=>$old,'stage'=>$application->stage]);
+            $this->event($tenant->id,'workflow.stage_changed.v1','application',$application->id,['previous'=>$old,'stage'=>$locked->stage]);
         });
         return back()->with('success','Application stage updated.');
     }
