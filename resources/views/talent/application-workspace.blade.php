@@ -16,7 +16,7 @@
 <h3 class="font-semibold mt-3">Stage history</h3><ol>@forelse($history as $entry)<li>{{ $entry->created_at }} — {{ $entry->from_stage ?? 'New' }} → {{ $entry->to_stage }}</li>@empty<li>No stage changes yet</li>@endforelse</ol></section>
 <section class="rounded bg-white p-4 dark:bg-gray-900"><h2 class="text-lg font-semibold">Interviews</h2>
 @forelse($interviews as $interview)
-<div class="border-b py-3"><strong>{{ $interview->title }}</strong> · {{ $interview->starts_at }} – {{ $interview->ends_at }} · {{ $interview->status }}
+<div class="border-b py-3"><strong>{{ $interview->title }}</strong> · {{ $interview->starts_at }} – {{ $interview->ends_at }} · {{ $interview->status }} <a class="underline" href="{{ route('admin.talent.interviews.calendar',$interview->id) }}">Download calendar invite</a>
 <form method="POST" action="{{ route('admin.talent.interviews.update',$interview->id) }}">@csrf @method('PATCH')
 <select name="status" aria-label="Interview status"><option value="scheduled" @selected($interview->status==='scheduled')>Scheduled</option><option value="completed" @selected($interview->status==='completed')>Completed</option><option value="cancelled" @selected($interview->status==='cancelled')>Cancelled</option></select>
 <button class="underline">Update interview</button></form></div>
