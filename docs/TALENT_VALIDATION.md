@@ -85,3 +85,8 @@ No tests from this checklist should be described as passed unless CI or a record
 - The internal interview update endpoint now accepts paired start/end times, validates ordering, and emits a distinct `interview.rescheduled.v1` record when the start changes.
 - Reminder integration test now checks that a reschedule cancels the old pending reminder and creates one for the new start time, then cancellation clears the remaining pending reminder.
 - No automatic external communications or scheduler are enabled. The new CI run must pass before relying on these changes.
+
+## Draft communications foundation
+- Added static candidate-acknowledgement and interview-reminder email template drafts and an idempotent, tenant-scoped email delivery draft planner.
+- No sending function or provider API is wired; `TALENT_EXTERNAL_EMAIL_ENABLED` defaults false. Delivery rows remain `draft`, not `sent`.
+- MySQL tests assert draft deduplication and tenant isolation. Before rollout: verified recipients, lawful messaging rules, human approval, content review, send adapter with provider idempotency, retry/error audit, opt-outs where required, and actual end-to-end tests.
