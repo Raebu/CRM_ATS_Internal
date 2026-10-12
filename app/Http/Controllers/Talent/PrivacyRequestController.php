@@ -43,6 +43,7 @@ class PrivacyRequestController extends Controller
                 'tenant_id' => $tenant->id,
                 'status' => 'pending_verification',
                 'created_by' => auth()->guard('user')->id(),
+                'due_at' => now()->addMonthNoOverflow(),
             ]);
 
             DomainEvent::create([
@@ -62,6 +63,8 @@ class PrivacyRequestController extends Controller
         $data = $request->validate([
             'status'=>['required',Rule::in(['identity_verified','in_review','resolved','declined'])],
             'notes'=>['nullable','string','max:10000'],
+            'resolution_code'=>['required_if:status,resolved,declined',Rule::in(['fulfilled','partially_fulfilled','exemption','unable_to_verify','withdrawn_by_requester'])],
+            'resolution_notes'=>['required_if:status,resolved,declined','nullable','string','max:10000'],
         ]);
 
         DB::transaction(function () use ($tenant,$id,$data) {
@@ -83,6 +86,9 @@ class PrivacyRequestController extends Controller
                 'reviewed_by'=>auth()->guard('user')->id(),
                 'verified_at'=>$data['status']==='identity_verified'?now():$entry->verified_at,
                 'resolved_at'=>in_array($data['status'],['resolved','declined'],true)?now():null,
+                'resolution_code'=>$data['resolution_code']??null,
+                'resolution_notes'=>$data['resolution_notes']??null,
+                'identity_evidence_reviewed_at'=>$data['status']==='identity_verified'?now():$entry->identity_evidence_reviewed_at,
             ]);
             DomainEvent::create([
                 'tenant_id'=>$tenant->id,'event_id'=>(string)Str::uuid(),
