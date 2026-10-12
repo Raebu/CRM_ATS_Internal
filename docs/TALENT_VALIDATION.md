@@ -74,3 +74,9 @@ No tests from this checklist should be described as passed unless CI or a record
 - Stable identifiers prevent duplicate reminders on repeated command runs; rescheduled interviews generate a new identifier, so stale-reminder cancellation remains outstanding.
 - No scheduler has been enabled; no emails, texts or calendar invitations are sent.
 - Must still add recipient assignment, cancellation/rescheduling handling, timing tests, and authenticated permissions before production automation.
+
+## Reminder CI repair / stale reminder protection
+- Fixed UUIDv5 generation to use Ramsey Uuid directly (`Str::uuid5` does not exist).
+- Reminder command now cancels pending inbox reminders for cancelled/completed/deleted or rescheduled interviews, or interviews already started.
+- Cancellation is applied when the command next runs; scheduler, email delivery and real-time rescind are not yet available.
+- MySQL integration test now exercises repeat runs and cancellation; awaiting fresh CI result.
