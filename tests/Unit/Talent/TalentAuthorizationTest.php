@@ -18,6 +18,12 @@ class TalentAuthorizationTest extends TestCase
         $this->assertFalse(TalentAuthorization::hasRolePermission('custom', [], 'talent'));
     }
 
+    public function test_analytics_requires_its_own_permission(): void
+    {
+        $this->assertFalse(TalentAuthorization::hasRolePermission('custom', ['talent'], 'talent.analytics.view'));
+        $this->assertTrue(TalentAuthorization::hasRolePermission('custom', ['talent.analytics.view'], 'talent.analytics.view'));
+    }
+
     public function test_specific_role_permission_is_required(): void
     {
         $this->assertTrue(TalentAuthorization::hasRolePermission('custom', ['talent.candidates.create'], 'talent.candidates.create'));
