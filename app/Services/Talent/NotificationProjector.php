@@ -24,6 +24,7 @@ class NotificationProjector
    ['source_event_id'=>$eventId,'kind'=>$kind],
    ['tenant_id'=>$tenantId,'status'=>'pending','data'=>[
     'record_id'=>$payload['application_id']??$payload['job_id']??null,
+    'candidate_id'=>$payload['candidate_id']??null,
    ]]
   );
  }
