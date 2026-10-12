@@ -17,8 +17,12 @@ class InterviewReminderTest extends TestCase
   $this->artisan('talent:interview-reminders')->assertSuccessful();
   $this->artisan('talent:interview-reminders')->assertSuccessful();
   $this->assertSame(1,RecruitmentNotification::where('kind','interview_reminder')->count());
+  $interview->update(['starts_at'=>now()->addHours(18),'ends_at'=>now()->addHours(19)]);
+  $this->artisan('talent:interview-reminders')->assertSuccessful();
+  $this->assertSame(1,RecruitmentNotification::where('kind','interview_reminder')->where('status','cancelled')->count());
+  $this->assertSame(1,RecruitmentNotification::where('kind','interview_reminder')->where('status','pending')->count());
   $interview->update(['status'=>'cancelled']);
   $this->artisan('talent:interview-reminders')->assertSuccessful();
-  $this->assertSame('cancelled',RecruitmentNotification::where('kind','interview_reminder')->firstOrFail()->status);
+  $this->assertSame(0,RecruitmentNotification::where('kind','interview_reminder')->where('status','pending')->count());
  }
 }
