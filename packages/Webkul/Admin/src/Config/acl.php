@@ -1,6 +1,7 @@
 <?php
 
 return [
+    ['key'=>'talent.candidates.view','name'=>'View candidate and application personal data','sort'=>22],
  ['key'=>'talent.email.view','name'=>'Review recruitment email drafts','route'=>'admin.talent.email.index','sort'=>19],
  ['key'=>'talent.email.create','name'=>'Create recruitment email drafts','route'=>'admin.talent.email.draft','sort'=>20],
  ['key'=>'talent.email.approve','name'=>'Approve recruitment email drafts','route'=>'admin.talent.email.approve','sort'=>21],
