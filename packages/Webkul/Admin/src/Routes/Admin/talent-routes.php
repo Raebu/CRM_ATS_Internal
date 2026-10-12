@@ -28,3 +28,9 @@ Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->prefix('tale
 Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->prefix('talent')->name('admin.talent.')->group(function () {
     Route::get('/documents/{id}/download', [\App\Http\Controllers\Talent\DocumentController::class, 'download'])->name('documents.download');
 });
+
+Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->prefix('talent')->name('admin.talent.')->controller(\App\Http\Controllers\Talent\PrivacyRequestController::class)->group(function () {
+ Route::get('/privacy','index')->name('privacy.index');
+ Route::post('/privacy','store')->name('privacy.store');
+ Route::patch('/privacy/{id}','update')->name('privacy.update');
+});
