@@ -68,3 +68,7 @@ There is no claim that this checklist or the earlier scaffold completes the prod
 - Added a token-hash-only challenge table with tenant/offer association, expiry, consumption/revocation and issuer fields.
 - Added internal challenge issuance that refuses unsent offers and requires the verified acceptance feature flag, which remains off. Reissuance revokes previous unconsumed challenges.
 - The service is not connected to a candidate-facing route and there is no acceptance handler or contact verification. The raw token must never be logged or included in a general JSON API response; test issuance only with synthetic records. This is **not yet a verified offer acceptance workflow**.
+
+## Single-use offer challenge consumption
+- Added an atomic, tenant-scoped compare-and-update that consumes an unexpired, unrevoked offer challenge at most once while the linked offer remains sent and the feature flag is enabled.
+- No route exposes the operation; consuming a challenge does not transition the offer to accepted. Controller-level verified candidate identity, independent authentication, delivery provenance, human/audit review and acceptance outcome processing remain required before launch.
