@@ -2,6 +2,7 @@
     <x-slot:title>Raeburn Talent</x-slot:title>
     <div class="grid gap-5 p-2">
         <h1 class="text-2xl font-bold dark:text-white">Raeburn Talent</h1>
+        <a href="{{ route('admin.talent.privacy.index') }}" class="underline">Privacy requests (restricted)</a>
         <p class="text-gray-600 dark:text-gray-300">Native recruitment workspace — vacancies, candidates and applications</p>
         @if(session('success')) <div class="rounded bg-green-100 p-3 text-green-900">{{ session('success') }}</div> @endif
         @if($errors->any()) <div class="rounded bg-red-100 p-3 text-red-900"><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div> @endif
