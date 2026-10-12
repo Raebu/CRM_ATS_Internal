@@ -3,6 +3,7 @@ namespace Tests\Feature\Talent;
 
 use App\Models\Talent\{Tenant,RecruitmentNotification,EmailDelivery};
 use App\Services\Talent\EmailDeliveryPlanner;
+use App\Services\Talent\EmailSnapshotIntegrity;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -26,6 +27,9 @@ class EmailDeliveryPlannerTest extends TestCase
   $this->assertSame('draft',$first->fresh()->status);
   $this->assertNull($first->fresh()->sent_at);
   $this->assertSame(1,$first->fresh()->template_version);
+  $this->assertTrue(EmailSnapshotIntegrity::valid($first->fresh()));
+  $first->update(['subject_snapshot'=>'Changed after draft creation']);
+  $this->assertFalse(EmailSnapshotIntegrity::valid($first->fresh()));
   $this->assertSame(1,EmailDelivery::count());
  }
 
