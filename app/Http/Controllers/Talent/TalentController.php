@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Talent;
 
 use App\Http\Controllers\Controller;
 use App\Services\Talent\RecruitmentTransitions;
+use App\Services\Talent\VacancyTransitions;
 use App\Models\Talent\{Application, Candidate, DomainEvent, Job, StageHistory, TalentPool, Tenant};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -56,7 +57,10 @@ class TalentController extends Controller
             throw \Illuminate\Validation\ValidationException::withMessages(['status'=>'Job publishing is disabled until approval and compliance controls are verified.']);
         }
         DB::transaction(function () use ($tenant,$job,$data) {
-            $previous = $job->status;
+            $locked = Job::where('tenant_id',$tenant->id)->lockForUpdate()->findOrFail($job->id);
+            $previous = $locked->status;
+            VacancyTransitions::enforce($previous,$data['status']);
+            $job = $locked;
             $job->update(['status'=>$data['status'], 'published_at'=>$data['status']==='published' ? ($job->published_at ?? now()) : $job->published_at]);
             $this->event($tenant->id,'job.updated.v1','job',$job->id,['previous'=>$previous,'status'=>$job->status]);
         });
