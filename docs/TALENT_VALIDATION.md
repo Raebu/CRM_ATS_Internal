@@ -107,3 +107,8 @@ No tests from this checklist should be described as passed unless CI or a record
 - Approval now verifies the stored versioned template snapshot and SHA-256 checksum; missing or modified snapshots are rejected before a draft can be approved.
 - Database feature tests assert that untampered drafts validate, and modified snapshot subjects fail validation.
 - Snapshot hashes are integrity checks against accidental or unauthorised field edits, not digital signatures or tamper-proof audit records. Approval auditing, verified contact ownership and external email delivery are still unfinished.
+
+## Release-consolidation hardening
+- Added `talent.candidates.view` as a distinct personal-data permission. The main Talent dashboard now returns empty candidate/application collections unless the user has this permission (or all-access role).
+- Remaining sensitive routes and linked views need a complete authenticated permission matrix; this one safeguard does not establish GDPR readiness.
+- See `docs/TALENT_RELEASE_READINESS.md` for complete stop-ship controls and full-spec backlog. Do not merge or deploy based solely on green syntax and feature CI.
