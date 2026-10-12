@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 use App\Models\Talent\Interview;
 use App\Models\Talent\RecruitmentNotification;
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
+use Ramsey\Uuid\Uuid;
 
 class CreateTalentInterviewReminders extends Command
 {
@@ -20,8 +20,8 @@ class CreateTalentInterviewReminders extends Command
    ->orderBy('id')->chunkById(100,function($interviews)use(&$created){
     foreach($interviews as $interview){
      // Stable UUID based on interview ID and start time makes repeated runs idempotent.
-     $eventId=Str::uuid5(
-      \Ramsey\Uuid\Uuid::NAMESPACE_DNS,
+     $eventId=Uuid::uuid5(
+      Uuid::NAMESPACE_DNS,
       'talent-interview-reminder-'.$interview->id.'-'.$interview->starts_at->toIso8601String()
      )->toString();
      $record=RecruitmentNotification::firstOrCreate(
