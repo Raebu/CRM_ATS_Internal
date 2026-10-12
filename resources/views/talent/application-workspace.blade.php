@@ -5,7 +5,7 @@
 <h1 class="text-2xl font-bold">{{ $application->candidate->name }} — {{ $application->job->title }}</h1>
 <p>Application #{{ $application->id }} · Current stage: <strong>{{ str_replace('_',' ',$application->stage) }}</strong> · Source: {{ $application->source ?? 'Not recorded' }}</p>
 @if(session('success'))<p role="status">{{ session('success') }}</p>@endif
-@if($errors->any())<ul role="alert">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>@endif>
+@if($errors->any())<ul role="alert">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>@endif
 <section class="rounded bg-white p-4 dark:bg-gray-900"><h2 class="text-lg font-semibold">Candidate</h2>
 <p>{{ $application->candidate->email }} · {{ $application->candidate->phone ?? 'No phone' }}</p>
 </section>
@@ -32,7 +32,7 @@
 <p class="text-sm">Draft and internal approval only. Delivery and candidate acceptance are disabled until identity and provider verification are complete.</p>
 @forelse($offers as $offer)<div class="border-b py-3">Version {{ $offer->version }} · {{ $offer->status }} · {{ $offer->currency }} {{ $offer->salary_amount }}
 <form method="POST" action="{{ route('admin.talent.offers.update',$offer->id) }}">@csrf @method('PATCH')
-<select name="status" aria-label="Offer status"><option value="draft">Draft</option><option value="pending_approval">Pending approval</option><option value="approved">Approved</option><option value="withdrawn">Withdrawn</option></select>
+<select name="status" aria-label="Offer status">@foreach(['draft','pending_approval','approved','withdrawn'] as $status)<option value="{{ $status }}" @selected($offer->status===$status)>{{ ucfirst(str_replace('_',' ',$status)) }}</option>@endforeach</select>
 <button class="underline">Update offer</button></form></div>
 @empty<p>No offers recorded</p>@endforelse
 <h3 class="font-semibold mt-3">New offer draft</h3>
