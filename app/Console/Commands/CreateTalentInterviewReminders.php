@@ -21,7 +21,7 @@ class CreateTalentInterviewReminders extends Command
     foreach($interviews as $interview){
      // Stable UUID based on interview ID and start time makes repeated runs idempotent.
      $eventId=Str::uuid5(
-      Str::NAMESPACE_DNS,
+      \Ramsey\Uuid\Uuid::NAMESPACE_DNS,
       'talent-interview-reminder-'.$interview->id.'-'.$interview->starts_at->toIso8601String()
      )->toString();
      $record=RecruitmentNotification::firstOrCreate(
