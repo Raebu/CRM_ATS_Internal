@@ -41,4 +41,22 @@
 <label>Currency <input name="currency" value="GBP" minlength="3" maxlength="3" required></label>
 <textarea name="conditions" maxlength="20000" placeholder="Offer conditions"></textarea>
 <button class="primary-button">Create draft offer</button></form></section>
+<section class="rounded bg-white p-4 dark:bg-gray-900"><h2 class="text-lg font-semibold">Placement and onboarding</h2>
+@if($application->stage==='hired')
+@if(!$placement)
+<form method="POST" action="{{ route('admin.talent.placements.store',$application->id) }}" class="grid gap-2 max-w-lg">@csrf
+<label>Start date <input type="date" name="start_date" required></label>
+<label>Handover notes <textarea name="handover_notes" maxlength="10000"></textarea></label>
+<button class="primary-button">Create placement and onboarding checklist</button></form>
+@else
+<p>Start: {{ $placement->start_date }} · Assigned recruiter ID: {{ $placement->recruiter_id }} · Status: {{ $placement->status }}</p>
+@if($placement->handover_notes)<p class="whitespace-pre-wrap">{{ $placement->handover_notes }}</p>@endif
+<h3 class="font-semibold mt-3">Onboarding checklist</h3>
+@foreach($placementTasks as $task)<form method="POST" action="{{ route('admin.talent.placements.tasks.update',[$placement->id,$task->id]) }}" class="flex items-center gap-3 py-2">@csrf @method('PATCH')
+<span>{{ $task->title }} — {{ $task->completed_at ? 'Complete' : 'Pending' }}</span>
+<input type="hidden" name="completed" value="{{ $task->completed_at ? '0' : '1' }}">
+<button class="underline">{{ $task->completed_at ? 'Reopen' : 'Mark complete' }}</button></form>@endforeach
+@endif
+@else<p>Placement becomes available after hiring following a verified accepted offer.</p>@endif
+</section>
 </div></x-admin::layouts>
