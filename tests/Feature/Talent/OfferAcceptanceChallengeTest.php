@@ -8,6 +8,10 @@ use Tests\TestCase;
 
 class OfferAcceptanceChallengeTest extends TestCase {
  use RefreshDatabase;
+ public function test_challenge_audit_table_never_stores_plaintext_tokens():void {
+  $this->assertTrue(\Illuminate\Support\Facades\Schema::hasTable('talent_offer_challenge_audit'));
+  $this->assertFalse(\Illuminate\Support\Facades\Schema::hasColumn('talent_offer_challenge_audit','token'));
+ }
  public function test_bad_token_format_is_rejected_before_database_lookup():void {
   $service=app(OfferAcceptanceChallenge::class);
   $this->assertFalse($service->validateChallenge(1,1,'short'));
