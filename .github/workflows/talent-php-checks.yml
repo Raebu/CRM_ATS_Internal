@@ -46,7 +46,7 @@ jobs:
           cp .env.example .env
           php artisan key:generate --force
       - name: Run policy unit tests
-        run: vendor/bin/pest tests/Unit/Talent/RecruitmentTransitionsTest.php tests/Unit/Talent/TalentAuthorizationTest.php tests/Unit/Talent/ClamAvScannerTest.php tests/Unit/Talent/EmailTemplateCatalogTest.php
+        run: vendor/bin/pest tests/Unit/Talent/RecruitmentTransitionsTest.php tests/Unit/Talent/TalentAuthorizationTest.php tests/Unit/Talent/ClamAvScannerTest.php tests/Unit/Talent/EmailTemplateCatalogTest.php tests/Unit/Talent/VacancyTransitionsTest.php
 
   mysql-integration:
     runs-on: ubuntu-latest
