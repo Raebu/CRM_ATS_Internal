@@ -1,6 +1,8 @@
 <?php
 return [
  'offer_delivery_enabled' => env('TALENT_OFFER_DELIVERY_ENABLED', false),
+ 'resend_api_key' => env('TALENT_RESEND_API_KEY'),
+ 'resend_from' => env('TALENT_RESEND_FROM'),
  'external_email_enabled' => env('TALENT_EXTERNAL_EMAIL_ENABLED', false),
  'clamav_host' => env('TALENT_CLAMAV_HOST', '127.0.0.1'),
  'clamav_port' => (int) env('TALENT_CLAMAV_PORT', 3310),
