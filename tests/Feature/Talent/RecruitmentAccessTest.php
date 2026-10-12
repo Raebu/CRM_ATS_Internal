@@ -47,6 +47,15 @@ class RecruitmentAccessTest extends TestCase
         $this->assertDatabaseMissing('talent_candidates',['email'=>'denied@example.invalid']);
     }
 
+    public function test_explicit_view_permission_allows_recruiter_to_access_candidate_data(): void
+    {
+        $tenant=Tenant::firstOrCreate(['slug'=>'raeburn-group'],['name'=>'The Raeburn Group']);
+        Candidate::create(['tenant_id'=>$tenant->id,'name'=>'Visible Example','email'=>'visible@example.invalid']);
+        $this->actingAs($this->recruiter(['talent','talent.candidates.view']),'user');
+        $data=(new TalentController)->index()->getData();
+        $this->assertCount(1,$data['candidates']);
+    }
+
     public function test_recruiter_cannot_read_candidate_data_without_separate_permission(): void
     {
         $tenant=Tenant::firstOrCreate(['slug'=>'raeburn-group'],['name'=>'The Raeburn Group']);
