@@ -90,7 +90,7 @@ class TalentController extends Controller
         DB::transaction(function () use ($tenant,$data) {
             $application = Application::create($data + ['tenant_id'=>$tenant->id,'stage'=>'applied','submitted_at'=>now()]);
             StageHistory::create(['tenant_id'=>$tenant->id,'application_id'=>$application->id,'from_stage'=>null,'to_stage'=>'applied','actor_id'=>auth()->guard('user')->id()]);
-            $this->event($tenant->id,'application.created.v1','application',$application->id,['job_id'=>$application->job_id,'candidate_id'=>$application->candidate_id]);
+            $this->event($tenant->id,'application.created.v1','application',$application->id,['application_id'=>$application->id,'job_id'=>$application->job_id,'candidate_id'=>$application->candidate_id]);
         });
         return back()->with('success','Application recorded.');
     }
