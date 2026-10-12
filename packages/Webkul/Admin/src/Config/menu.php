@@ -1,6 +1,13 @@
 <?php
 
 return [
+    [
+        'key' => 'talent',
+        'name' => 'Raeburn Talent',
+        'route' => 'admin.talent.index',
+        'sort' => 7,
+        'icon-class' => 'icon-contact',
+    ],
     /**
      * Dashboard.
      */
