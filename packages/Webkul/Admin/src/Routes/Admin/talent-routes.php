@@ -19,3 +19,8 @@ Route::prefix('talent')->name('admin.talent.')->controller(\App\Http\Controllers
     Route::post('/applications/{id}/offers', 'storeOffer')->name('offers.store');
     Route::patch('/offers/{id}', 'updateOffer')->name('offers.update');
 });
+
+Route::prefix('talent')->name('admin.talent.')->controller(\App\Http\Controllers\Talent\TalentPoolController::class)->group(function () {
+    Route::post('/pools','store')->name('pools.store');
+    Route::post('/pools/{id}/candidates','addCandidate')->name('pools.candidates.store');
+});
