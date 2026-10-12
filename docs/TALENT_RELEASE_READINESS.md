@@ -48,3 +48,8 @@ There is no claim that this checklist or the earlier scaffold completes the prod
 - Privacy requests now record a provisional review date one calendar month after receipt, surfaced in the admin review table. It is **not** an automatic legal deadline calculation; authorised staff must account for UK GDPR rules, pauses/extensions, exceptions and local policy.
 - Resolution/decline now requires a decision code and free-text reasoning. Identity-verification review timestamp is recorded, but no proof of identity is collected or independently validated by the application.
 - This does NOT perform the request, redact candidate records, generate a data export, apply legal holds or make the system compliant. All remain explicit stop-ship conditions.
+
+## Privacy decision history increment
+- Every privacy-request status change now writes a tenant-scoped actor/status/decision history row in the same DB transaction as the request update and outbox event.
+- This is an ordinary database history table, not write-once cryptographically protected audit storage. Privileged DB operators may alter records.
+- Staff must not mark access/export or erasure requests 'resolved' unless all legally appropriate work is performed and evidenced; automated export, erasure, legal holds and real identity verification remain blocked for launch.
