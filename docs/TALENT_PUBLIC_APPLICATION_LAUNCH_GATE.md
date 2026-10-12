@@ -16,3 +16,9 @@ Default: `TALENT_PUBLIC_APPLICATIONS_ENABLED=false`. Do not enable on production
 - [ ] Run on staging, review access controls, automated tests and back up before production release.
 
 The current public page is basic scaffolding. These controls are prerequisites to collecting real candidate data.
+
+## October 12 implementation update
+- Added a private local-disk document download controller scoped to the fixed Raeburn tenant.
+- Document downloads require the dedicated `talent.documents.view` permission and `scan_status=clean`. Pending, infected, scan-failed and missing documents are rejected.
+- A document access event records the acting administrator. This is groundwork, not a fully immutable audit system.
+- No malware scanner or asynchronous scan worker has been implemented; do not mark uploads clean manually or activate intake.
