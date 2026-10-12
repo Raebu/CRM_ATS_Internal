@@ -27,6 +27,10 @@ class TalentAnalyticsTest extends TestCase
   $this->assertSame(1,$data['interviews']);
   $this->assertSame(1,$data['offers']);
   $this->assertSame(0,$data['acceptedOffers']);
+  $this->assertSame(100.0,$data['interviewConversion']);
+  $this->assertSame(100.0,$data['offerConversion']);
+  $this->assertSame(0.0,$data['acceptanceConversion']);
+  $this->assertNull($data['averageTimeToAcceptedOfferDays']);
   $this->assertSame(1,(int)$data['sources']['direct']);
  }
 }
