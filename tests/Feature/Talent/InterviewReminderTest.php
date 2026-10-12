@@ -13,9 +13,12 @@ class InterviewReminderTest extends TestCase
   $job=Job::create(['tenant_id'=>$tenant->id,'title'=>'Support','slug'=>'reminder-test','description'=>'Test']);
   $candidate=Candidate::create(['tenant_id'=>$tenant->id,'name'=>'Candidate','email'=>'reminder@example.invalid']);
   $application=Application::create(['tenant_id'=>$tenant->id,'job_id'=>$job->id,'candidate_id'=>$candidate->id,'stage'=>'applied']);
-  Interview::create(['tenant_id'=>$tenant->id,'application_id'=>$application->id,'title'=>'Interview','starts_at'=>now()->addHours(12),'ends_at'=>now()->addHours(13),'status'=>'scheduled']);
+  $interview=Interview::create(['tenant_id'=>$tenant->id,'application_id'=>$application->id,'title'=>'Interview','starts_at'=>now()->addHours(12),'ends_at'=>now()->addHours(13),'status'=>'scheduled']);
   $this->artisan('talent:interview-reminders')->assertSuccessful();
   $this->artisan('talent:interview-reminders')->assertSuccessful();
   $this->assertSame(1,RecruitmentNotification::where('kind','interview_reminder')->count());
+  $interview->update(['status'=>'cancelled']);
+  $this->artisan('talent:interview-reminders')->assertSuccessful();
+  $this->assertSame('cancelled',RecruitmentNotification::where('kind','interview_reminder')->firstOrFail()->status);
  }
 }
