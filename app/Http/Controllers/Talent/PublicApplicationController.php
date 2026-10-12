@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Talent;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\Talent\ScanCandidateDocument;
 use App\Models\Talent\{Application,Candidate,Document,DomainEvent,Job,Tenant};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -49,12 +50,13 @@ class PublicApplicationController extends Controller
      $file=$request->file('cv');
      $documentKey=$file->store('talent-private/'.Str::uuid(),'local');
      if(!$documentKey) throw new \RuntimeException('Private document storage failed.');
-     Document::create([
+     $document = Document::create([
       'tenant_id'=>$tenant->id,'candidate_id'=>$candidate->id,'application_id'=>$application->id,
       'disk'=>'local','storage_key'=>$documentKey,'original_name'=>$file->getClientOriginalName(),
       'mime_type'=>$file->getMimeType()?:'application/octet-stream',
       'size_bytes'=>$file->getSize(),'scan_status'=>'pending'
      ]);
+     ScanCandidateDocument::dispatch($document->id)->afterCommit();
     }
     DomainEvent::create([
      'tenant_id'=>$tenant->id,'event_id'=>(string)Str::uuid(),'event_type'=>'application.created.v1',
