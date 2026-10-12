@@ -3,6 +3,8 @@
 namespace Tests\Feature\Talent;
 
 use App\Models\Talent\{Candidate,Document,Tenant};
+use App\Http\Controllers\Talent\DocumentController;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -23,7 +25,8 @@ class DocumentAccessTest extends TestCase
         ]);
 
         $this->assertSame('pending',$document->scan_status);
-        $this->assertFalse($document->scan_status === 'clean');
+        $this->expectException(HttpException::class);
+        (new DocumentController)->download($document->id);
     }
 
     public function test_rejected_document_never_counts_as_clean(): void
