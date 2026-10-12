@@ -68,3 +68,9 @@ No tests from this checklist should be described as passed unless CI or a record
 - Accepted-offer ratio uses distinct applications with an accepted offer divided by distinct offered applications.
 - Average duration uses submitted_at to accepted_at for accepted offer rows with chronological timestamps. It measures time to accepted offer, **not** time-to-hire or actual employment start. The same application can contribute multiple rows if multiple offers are marked accepted; that requires a later data-integrity rule.
 - Zero denominator shows N/A. New analytics regression assertions are covered by the MySQL feature test pipeline.
+
+## Interview reminder foundation
+- Added `php artisan talent:interview-reminders --hours=24` to create **internal inbox reminders** for scheduled upcoming interviews.
+- Stable identifiers prevent duplicate reminders on repeated command runs; rescheduled interviews generate a new identifier, so stale-reminder cancellation remains outstanding.
+- No scheduler has been enabled; no emails, texts or calendar invitations are sent.
+- Must still add recipient assignment, cancellation/rescheduling handling, timing tests, and authenticated permissions before production automation.
