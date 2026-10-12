@@ -23,6 +23,27 @@ final class OfferAcceptanceChallenge
    ->where('expires_at','>',now())->exists();
  }
 
+ /**
+  * Consume an authenticated challenge atomically. Authentication of the
+  * candidate and proof of delivery must be checked by a future controller.
+  * No offer status is changed by this service.
+  */
+ public function consume(int $tenantId,int $offerId,string $token):bool
+ {
+  if (!config('talent.verified_offer_acceptance_enabled',false)
+      || !preg_match('/^[A-Za-z0-9]{64}$/D',$token)) return false;
+  return DB::transaction(function()use($tenantId,$offerId,$token){
+   $offer=Offer::where('tenant_id',$tenantId)->lockForUpdate()->find($offerId);
+   if (!$offer || $offer->status!=='sent') return false;
+   return DB::table('talent_offer_acceptance_challenges')
+    ->where('tenant_id',$tenantId)->where('offer_id',$offerId)
+    ->where('token_hash',hash('sha256',$token))
+    ->whereNull('consumed_at')->whereNull('revoked_at')
+    ->where('expires_at','>',now())
+    ->update(['consumed_at'=>now(),'updated_at'=>now()])===1;
+  });
+ }
+
  public function issue(int $tenantId,int $offerId,?int $actorId=null):array
  {
   return DB::transaction(function()use($tenantId,$offerId,$actorId){
