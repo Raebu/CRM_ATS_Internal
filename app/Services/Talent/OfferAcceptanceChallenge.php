@@ -35,12 +35,18 @@ final class OfferAcceptanceChallenge
   return DB::transaction(function()use($tenantId,$offerId,$token){
    $offer=Offer::where('tenant_id',$tenantId)->lockForUpdate()->find($offerId);
    if (!$offer || $offer->status!=='sent') return false;
-   return DB::table('talent_offer_acceptance_challenges')
+   $challenge=DB::table('talent_offer_acceptance_challenges')
     ->where('tenant_id',$tenantId)->where('offer_id',$offerId)
     ->where('token_hash',hash('sha256',$token))
     ->whereNull('consumed_at')->whereNull('revoked_at')
-    ->where('expires_at','>',now())
-    ->update(['consumed_at'=>now(),'updated_at'=>now()])===1;
+    ->where('expires_at','>',now())->first();
+   if(!$challenge)return false;
+   $changed=DB::table('talent_offer_acceptance_challenges')->where('id',$challenge->id)
+    ->whereNull('consumed_at')->whereNull('revoked_at')->where('expires_at','>',now())
+    ->update(['consumed_at'=>now(),'updated_at'=>now()]);
+   if($changed!==1)return false;
+   DB::table('talent_offer_challenge_audit')->insert(['tenant_id'=>$tenantId,'offer_id'=>$offerId,'challenge_id'=>$challenge->id,'action'=>'consumed','created_at'=>now()]);
+   return true;
   });
  }
 
