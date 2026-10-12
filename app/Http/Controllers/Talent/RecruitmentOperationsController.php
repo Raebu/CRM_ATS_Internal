@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Talent;
 
 use App\Http\Controllers\Controller;
+use App\Services\Talent\TenantRecords;
 use App\Services\Talent\RecruitmentTransitions;
 use App\Models\Talent\{Application,DomainEvent,Interview,Offer,Tenant};
 use Illuminate\Http\Request;
@@ -13,7 +14,7 @@ class RecruitmentOperationsController extends Controller
 {
  private function tenant():Tenant { return Tenant::where('slug','raeburn-group')->firstOrFail(); }
  private function application(int $id, int $tenantId):Application {
-  return Application::where('tenant_id',$tenantId)->findOrFail($id);
+  return TenantRecords::application($tenantId,$id);
  }
  private function record(int $tenantId,string $type,string $aggregate,int $id,array $payload):void {
   DomainEvent::create(['tenant_id'=>$tenantId,'event_id'=>(string)Str::uuid(),
