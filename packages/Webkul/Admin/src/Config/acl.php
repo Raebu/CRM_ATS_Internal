@@ -1,6 +1,7 @@
 <?php
 
 return [
+ ['key'=>'talent.email.send','name'=>'Submit approved recruitment email to provider','route'=>'admin.talent.email.submit','sort'=>24],
  ['key'=>'talent.placements.manage','name'=>'Manage hired candidate placement and onboarding','route'=>['admin.talent.placements.store','admin.talent.placements.tasks.update'],'sort'=>23],
     ['key'=>'talent.candidates.view','name'=>'View candidate and application personal data','route'=>['admin.talent.applications.show'],'sort'=>22],
  ['key'=>'talent.email.view','name'=>'Review recruitment email drafts','route'=>'admin.talent.email.index','sort'=>19],
