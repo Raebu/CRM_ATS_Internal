@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Talent;
 use App\Http\Controllers\Controller;
+use App\Services\Talent\TenantRecords;
 use App\Models\Talent\{Candidate,DomainEvent,TalentPool,Tenant};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,10 +23,10 @@ class TalentPoolController extends Controller {
   return back()->with('success','Talent pool created.');
  }
  public function addCandidate(Request $request,int $id) {
-  $tenant=$this->tenant();$pool=TalentPool::where('tenant_id',$tenant->id)->findOrFail($id);
+  $tenant=$this->tenant();$pool=TenantRecords::pool($tenant->id,$id);
   $data=$request->validate(['candidate_id'=>['required','integer',Rule::exists('talent_candidates','id')->where('tenant_id',$tenant->id)]]);
   DB::transaction(function()use($tenant,$pool,$data){
-   $candidate=Candidate::where('tenant_id',$tenant->id)->findOrFail($data['candidate_id']);
+   $candidate=TenantRecords::candidate($tenant->id,$data['candidate_id']);
    $inserted=DB::table('talent_pool_members')->insertOrIgnore([
     'tenant_id'=>$tenant->id,'pool_id'=>$pool->id,'candidate_id'=>$candidate->id,
     'added_at'=>now(),'created_at'=>now(),'updated_at'=>now()
