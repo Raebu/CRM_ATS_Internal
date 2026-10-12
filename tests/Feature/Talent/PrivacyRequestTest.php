@@ -1,0 +1,22 @@
+<?php
+namespace Tests\Feature\Talent;
+
+use App\Models\Talent\{Candidate,PrivacyRequest,Tenant};
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class PrivacyRequestTest extends TestCase
+{
+ use RefreshDatabase;
+ public function test_privacy_request_is_pending_identity_verification_by_default():void
+ {
+  $tenant=Tenant::firstOrCreate(['slug'=>'raeburn-group'],['name'=>'The Raeburn Group']);
+  $candidate=Candidate::create(['tenant_id'=>$tenant->id,'name'=>'Example Person','email'=>'privacy@example.invalid']);
+  $request=PrivacyRequest::create([
+   'tenant_id'=>$tenant->id,'candidate_id'=>$candidate->id,
+   'request_type'=>'access','created_by'=>1,
+  ]);
+  $this->assertSame('pending_verification',$request->fresh()->status);
+  $this->assertNull($request->fresh()->resolved_at);
+ }
+}
