@@ -38,3 +38,8 @@
 5. Verify production health, audit logs, workers and private file security before any real candidate intake.
 
 There is no claim that this checklist or the earlier scaffold completes the product.
+
+## 12 October access-control regression batch
+- Fixed an ACL loader error caused by a route-less `talent.candidates.view` permission by explicitly supplying an empty route mapping; authenticated MySQL tests passed after the fix.
+- Added negative-path HTTP checks for privacy, notifications, analytics, email review and approval, CV downloads, offers, interviews and pool creation.
+- The expanded denial test matrix requires a fresh CI pass. It tests a restricted base recruiter, not all possible permission combinations, tenant roles, or record-level ownership.
