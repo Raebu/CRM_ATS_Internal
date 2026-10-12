@@ -52,3 +52,8 @@ No tests from this checklist should be described as passed unless CI or a record
 - Acknowledge is an idempotent restricted POST/PATCH action and is not an external delivery confirmation.
 - No recipient-based routing, external email, escalations, scheduling or notification delivery confirmation yet.
 - Production rollout still blocked pending end-to-end access control tests and complete security review.
+
+## Analytics reporting
+- Tenant-scoped vacancy totals, published vacancies, application stages and source attribution added.
+- Integration test checks fixed Raeburn reporting excludes records from a second tenant; policy test checks `talent.analytics.view` is separate from base Talent access.
+- Reporting does not imply general multitenancy: user membership is still fixed to the Raeburn tenant. Conversion funnels, time-to-hire and attribution quality checks remain outstanding.
