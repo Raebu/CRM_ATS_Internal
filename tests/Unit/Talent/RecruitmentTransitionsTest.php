@@ -4,7 +4,7 @@ namespace Tests\Unit\Talent;
 
 use App\Services\Talent\RecruitmentTransitions;
 use Illuminate\Validation\ValidationException;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class RecruitmentTransitionsTest extends TestCase
 {
