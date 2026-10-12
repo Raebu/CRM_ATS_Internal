@@ -21,11 +21,13 @@ class TalentController extends Controller
     public function index()
     {
         $tenant = $this->tenant();
+        $user = auth()->guard('user')->user();
+        $canViewCandidates = $user && ($user->role?->permission_type === 'all' || $user->hasPermission('talent.candidates.view'));
         return view('talent.index', [
             'jobs' => Job::where('tenant_id', $tenant->id)->latest()->get(),
-            'candidates' => Candidate::where('tenant_id', $tenant->id)->when(request('candidate_search'), function ($q, $search) { $q->where(function ($inner) use ($search) { $inner->where('name','like','%'.addcslashes($search,'%_\\').'%')->orWhere('email','like','%'.addcslashes($search,'%_\\').'%'); }); })->latest()->limit(50)->get(),
+            'candidates' => $canViewCandidates ? Candidate::where('tenant_id', $tenant->id)->when(request('candidate_search'), function ($q, $search) { $q->where(function ($inner) use ($search) { $inner->where('name','like','%'.addcslashes($search,'%_\\').'%')->orWhere('email','like','%'.addcslashes($search,'%_\\').'%'); }); })->latest()->limit(50)->get() : collect(),
             'talentPools' => TalentPool::withCount('candidates')->where('tenant_id',$tenant->id)->orderBy('name')->get(),
-            'applications' => Application::with(['job','candidate'])->where('tenant_id', $tenant->id)->latest()->limit(100)->get(),
+            'applications' => $canViewCandidates ? Application::with(['job','candidate'])->where('tenant_id', $tenant->id)->latest()->limit(100)->get() : collect(),
         ]);
     }
 
