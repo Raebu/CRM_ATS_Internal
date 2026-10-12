@@ -63,3 +63,8 @@ There is no claim that this checklist or the earlier scaffold completes the prod
 - Interview creation and explicit rescheduling now require future start times; rescheduling cannot simultaneously change the interview to completed/cancelled.
 - Offer status 'sent' is blocked while `TALENT_OFFER_DELIVERY_ENABLED` is false (default). Existing 'accepted' status remains disabled pending verified candidate action. A real provider-backed delivery receipt and signed, expiring acceptance flow are needed before either is enabled.
 - This is a release safety improvement, **not** verified candidate acceptance or integrated email/calendar delivery.
+
+## Offer-acceptance challenge groundwork
+- Added a token-hash-only challenge table with tenant/offer association, expiry, consumption/revocation and issuer fields.
+- Added internal challenge issuance that refuses unsent offers and requires the verified acceptance feature flag, which remains off. Reissuance revokes previous unconsumed challenges.
+- The service is not connected to a candidate-facing route and there is no acceptance handler or contact verification. The raw token must never be logged or included in a general JSON API response; test issuance only with synthetic records. This is **not yet a verified offer acceptance workflow**.
