@@ -2,6 +2,7 @@
 namespace App\Services\Talent;
 
 use App\Models\Talent\DomainEvent;
+use App\Services\Talent\NotificationProjector;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -27,6 +28,8 @@ class OutboxDispatcher
    });
    if(!$event)break;
    try {
+    // Persist the internal notification projection before publishing the event.
+    app(NotificationProjector::class)->project($event->event_id,$event->event_type,$event->tenant_id,$event->payload);
     // Laravel listeners may run synchronously or be queued. Delivery is at-least-once.
     event('talent.domain_event', [$event->event_id,$event->event_type,$event->tenant_id,$event->payload]);
     DomainEvent::whereKey($event->id)->whereNull('published_at')
