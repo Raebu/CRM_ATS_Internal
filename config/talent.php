@@ -1,5 +1,6 @@
 <?php
 return [
+ 'external_email_enabled' => env('TALENT_EXTERNAL_EMAIL_ENABLED', false),
  'clamav_host' => env('TALENT_CLAMAV_HOST', '127.0.0.1'),
  'clamav_port' => (int) env('TALENT_CLAMAV_PORT', 3310),
  // Do not enable until published privacy notice, DSAR path, malware scanning and security tests pass.
