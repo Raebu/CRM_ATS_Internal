@@ -25,6 +25,7 @@ class EmailDeliveryPlannerTest extends TestCase
   $this->assertSame($first->id,$second->id);
   $this->assertSame('draft',$first->fresh()->status);
   $this->assertNull($first->fresh()->sent_at);
+  $this->assertSame(1,$first->fresh()->template_version);
   $this->assertSame(1,EmailDelivery::count());
  }
 
