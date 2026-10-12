@@ -43,4 +43,4 @@ jobs:
           cp .env.example .env
           php artisan key:generate --force
       - name: Run policy unit tests
-        run: vendor/bin/phpunit --testsuite Unit --filter RecruitmentTransitionsTest
+        run: vendor/bin/pest tests/Unit/Talent/RecruitmentTransitionsTest.php
