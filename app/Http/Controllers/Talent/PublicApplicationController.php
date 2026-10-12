@@ -12,6 +12,14 @@ use Illuminate\Validation\ValidationException;
 
 class PublicApplicationController extends Controller
 {
+ public function index() {
+  abort_unless(config('talent.public_applications_enabled', false),404);
+  $tenant=Tenant::where('slug','raeburn-group')->firstOrFail();
+  $jobs=Job::where('tenant_id',$tenant->id)->where('status','published')
+   ->where(fn($q)=>$q->whereNull('closes_at')->orWhere('closes_at','>',now()))
+   ->orderByDesc('published_at')->paginate(20);
+  return view('talent.careers',compact('jobs'));
+ }
  public function show(string $slug) {
   abort_unless(config('talent.public_applications_enabled', false),404);
   $tenant=Tenant::where('slug','raeburn-group')->firstOrFail();
