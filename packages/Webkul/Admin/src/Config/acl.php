@@ -1,6 +1,9 @@
 <?php
 
 return [
+ ['key'=>'talent.privacy.view','name'=>'Review privacy requests','route'=>'admin.talent.privacy.index','sort'=>13],
+ ['key'=>'talent.privacy.create','name'=>'Record privacy requests','route'=>'admin.talent.privacy.store','sort'=>14],
+ ['key'=>'talent.privacy.manage','name'=>'Manage privacy requests','route'=>'admin.talent.privacy.update','sort'=>15],
     ['key'=>'talent.documents.view','name'=>'View cleared candidate documents','route'=>'admin.talent.documents.download','sort'=>12],
     ['key'=>'talent.pools.create','name'=>'Create talent pools','route'=>'admin.talent.pools.store','sort'=>10],
     ['key'=>'talent.pools.manage','name'=>'Manage pool membership','route'=>'admin.talent.pools.candidates.store','sort'=>11],
