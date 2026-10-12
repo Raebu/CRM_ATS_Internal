@@ -61,11 +61,12 @@ final class OfferAcceptanceChallenge
     ->where('tenant_id',$tenantId)->where('offer_id',$offerId)->whereNull('consumed_at')
     ->update(['revoked_at'=>now()]);
    $token=Str::random(64);
-   DB::table('talent_offer_acceptance_challenges')->insert([
+   $challengeId=DB::table('talent_offer_acceptance_challenges')->insertGetId([
     'tenant_id'=>$tenantId,'offer_id'=>$offerId,
     'token_hash'=>hash('sha256',$token),'expires_at'=>now()->addHours(24),
     'issued_by'=>$actorId,'created_at'=>now(),'updated_at'=>now(),
    ]);
+   DB::table('talent_offer_challenge_audit')->insert(['tenant_id'=>$tenantId,'offer_id'=>$offerId,'challenge_id'=>$challengeId,'action'=>'issued','actor_id'=>$actorId,'created_at'=>now()]);
    return ['token'=>$token,'expires_at'=>now()->addHours(24)];
   });
  }
