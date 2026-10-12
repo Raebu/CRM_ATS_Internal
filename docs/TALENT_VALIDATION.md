@@ -34,3 +34,9 @@ No tests from this checklist should be described as passed unless CI or a record
 - Requests start pending identity verification; status updates are controlled and emit records to the outbox.
 - This does NOT fulfil DSARs, export files, erase data, determine lawful bases, calculate statutory deadlines, or implement consent/retention compliance.
 - Before production: privacy-reviewer permissions, secure identity verification, full request/decision audit, legal holds, response deadlines, actual data export/erasure pipeline and human review are required.
+
+## Durable event delivery foundation
+- Added an at-least-once local Laravel-event outbox dispatcher and `talent:outbox-dispatch` command, with persisted retries, claim leases and dead-letter status.
+- Events are marked published after the local Laravel dispatcher returns. This is NOT proof of delivery by external services or asynchronously queued listeners.
+- Event consumers must be idempotent by event_id; consumer deduplication, production scheduling, real notifications, alerting and external delivery are NOT implemented.
+- Do not enable an automatic scheduler until duplicate processing and error paths are integration-tested.
