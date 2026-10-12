@@ -40,3 +40,9 @@ No tests from this checklist should be described as passed unless CI or a record
 - Events are marked published after the local Laravel dispatcher returns. This is NOT proof of delivery by external services or asynchronously queued listeners.
 - Event consumers must be idempotent by event_id; consumer deduplication, production scheduling, real notifications, alerting and external delivery are NOT implemented.
 - Do not enable an automatic scheduler until duplicate processing and error paths are integration-tested.
+
+## Notification projection foundation
+- Application, interview and privacy request events can now create idempotent **internal** notification records in `talent_notifications`.
+- A unique event ID/kind constraint prevents repeated outbox delivery from duplicating a notification.
+- The notification projector runs before the outbox event is marked published. It does not send external email, SMS or WhatsApp.
+- Remaining: notification inbox UI, recipients and access policies, scheduled alerts, email templates and delivery, full observability and production verification.
