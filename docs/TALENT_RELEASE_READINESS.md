@@ -53,3 +53,8 @@ There is no claim that this checklist or the earlier scaffold completes the prod
 - Every privacy-request status change now writes a tenant-scoped actor/status/decision history row in the same DB transaction as the request update and outbox event.
 - This is an ordinary database history table, not write-once cryptographically protected audit storage. Privileged DB operators may alter records.
 - Staff must not mark access/export or erasure requests 'resolved' unless all legally appropriate work is performed and evidenced; automated export, erasure, legal holds and real identity verification remain blocked for launch.
+
+## Internal access-request manifest (12 October)
+- A tenant-scoped PrivacyExportAssembler can produce a **staff-only in-memory review manifest** of a candidate's basic profile, applications and document metadata, provided an access request has a recorded verified state and timestamp.
+- The assembler is not an HTTP route or public download. No actual candidate document content is included. It does not establish whether identity evidence is genuine, inventory all disclosures, perform redaction, assess exemptions, or deliver a subject-access response.
+- Negative tests cover unverified and cross-tenant requests. Actual authorised, complete export/disclosure and erasure workflows remain unimplemented stop-ship requirements.
