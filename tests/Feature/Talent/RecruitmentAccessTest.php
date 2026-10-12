@@ -49,6 +49,27 @@ class RecruitmentAccessTest extends TestCase
         $this->assertDatabaseMissing('talent_candidates',['email'=>'denied@example.invalid']);
     }
 
+    public function test_basic_recruiter_cannot_access_sensitive_talent_operations(): void
+    {
+        $this->withoutMiddleware(CanInstall::class);
+        $this->actingAs($this->recruiter(['talent']),'user');
+        $routes=[
+            ['GET','admin.talent.privacy.index',[]],
+            ['GET','admin.talent.notifications.index',[]],
+            ['GET','admin.talent.analytics.index',[]],
+            ['GET','admin.talent.email.index',[]],
+            ['GET','admin.talent.documents.download',['id'=>99999]],
+            ['POST','admin.talent.email.approve',['id'=>99999]],
+            ['PATCH','admin.talent.offers.update',['id'=>99999]],
+            ['PATCH','admin.talent.interviews.update',['id'=>99999]],
+            ['POST','admin.talent.pools.store',[]],
+        ];
+        foreach($routes as [$method,$name,$parameters]){
+            $response=$this->call($method,route($name,$parameters));
+            $this->assertContains($response->status(),[401,403],$name.' must deny a base recruiter');
+        }
+    }
+
     public function test_explicit_view_permission_allows_recruiter_to_access_candidate_data(): void
     {
         $tenant=Tenant::firstOrCreate(['slug'=>'raeburn-group'],['name'=>'The Raeburn Group']);
