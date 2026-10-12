@@ -6,6 +6,7 @@ on:
       - 'app/Models/Talent/**'
       - 'app/Services/Talent/**'
       - 'app/Jobs/Talent/**'
+      - 'app/Console/Commands/DispatchTalentOutbox.php'
       - 'database/migrations/2026_10_12_12*.php'
       - 'tests/**/Talent/**'
       - '.github/workflows/talent-php-checks.yml'
@@ -25,7 +26,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          find app/Http/Controllers/Talent app/Models/Talent app/Services/Talent app/Jobs/Talent tests/Feature/Talent tests/Unit/Talent -type f -name '*.php' -print0 |
+          find app/Http/Controllers/Talent app/Models/Talent app/Services/Talent app/Jobs/Talent app/Console/Commands/DispatchTalentOutbox.php tests/Feature/Talent tests/Unit/Talent -type f -name '*.php' -print0 |
             xargs -0 -n1 php -l
           for file in database/migrations/2026_10_12_12*.php; do php -l "$file"; done
   transitions:
