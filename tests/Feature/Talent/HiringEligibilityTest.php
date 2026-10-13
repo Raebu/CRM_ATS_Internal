@@ -67,6 +67,17 @@ class HiringEligibilityTest extends TestCase
   $this->assertTrue(true);
  }
 
+ public function test_superseded_accepted_offer_cannot_authorize_hiring():void
+ {
+  $tenant=Tenant::firstOrCreate(['slug'=>'raeburn-group'],['name'=>'The Raeburn Group']);
+  $candidate=Candidate::create(['tenant_id'=>$tenant->id,'name'=>'Superseded Candidate','email'=>'superseded@example.invalid']);
+  $job=Job::create(['tenant_id'=>$tenant->id,'title'=>'Superseded Role','slug'=>'superseded-role','description'=>'Testing']);
+  $application=Application::create(['tenant_id'=>$tenant->id,'job_id'=>$job->id,'candidate_id'=>$candidate->id,'stage'=>'offer']);
+  Offer::create(['tenant_id'=>$tenant->id,'application_id'=>$application->id,'version'=>1,'currency'=>'GBP','status'=>'accepted']);
+  Offer::create(['tenant_id'=>$tenant->id,'application_id'=>$application->id,'version'=>2,'currency'=>'GBP','status'=>'draft']);
+  $this->expectException(ValidationException::class);
+  HiringEligibility::enforce($tenant->id,$application->id);
+ }
  public function test_application_without_accepted_offer_is_ineligible_for_hiring():void
  {
   $tenant=Tenant::firstOrCreate(['slug'=>'raeburn-group'],['name'=>'The Raeburn Group']);
