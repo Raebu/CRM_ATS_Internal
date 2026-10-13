@@ -72,3 +72,8 @@ There is no claim that this checklist or the earlier scaffold completes the prod
 ## Single-use offer challenge consumption
 - Added an atomic, tenant-scoped compare-and-update that consumes an unexpired, unrevoked offer challenge at most once while the linked offer remains sent and the feature flag is enabled.
 - No route exposes the operation; consuming a challenge does not transition the offer to accepted. Controller-level verified candidate identity, independent authentication, delivery provenance, human/audit review and acceptance outcome processing remain required before launch.
+
+## 13 October P0 security hardening and release preflight
+- The admin offer-status endpoint now rejects manual `sent`, `accepted` and `declined` decisions **even when associated flags are true**. A provider-backed dispatch workflow and separately verified candidate decision controller are prerequisites; no candidate offer completion endpoint is connected yet.
+- `php artisan talent:production-preflight` is a read-only, fail-on-missing-settings screening command for HTTPS, queue, private storage, DB access and disabled exposure flags. It does **not** certify production readiness; in fact, disabled flags are treated as safe while launch functionality remains unavailable.
+- Release remains blocked on verified sender and webhook lifecycle, mailbox delivery, actual identity verification, privacy fulfilment, independently verified backup recovery, scanning daemon and worker operations, abuse protection, accessibility and staged deployment testing.
