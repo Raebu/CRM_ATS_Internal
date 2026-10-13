@@ -87,8 +87,8 @@ class RecruitmentOperationsController extends Controller
   $tenant=$this->tenant(); $offer=Offer::where('tenant_id',$tenant->id)->findOrFail($id);
   $data=$request->validate(['status'=>['required',Rule::in(['draft','pending_approval','approved','sent','accepted','declined','withdrawn'])]]);
   // A status label cannot stand in for a verified communication provider receipt.
-  if ($data['status']==='sent' && !config('talent.offer_delivery_enabled',false)) {
-   throw \Illuminate\Validation\ValidationException::withMessages(['status'=>'Offer delivery is disabled until verified dispatch evidence is integrated.']);
+  if ($data['status']==='sent') {
+   throw \Illuminate\Validation\ValidationException::withMessages(['status'=>'A provider-confirmed delivery workflow must record offer dispatch; administrators cannot set sent manually.']);
   }
   // Never allow a recruiter to impersonate the candidate, even if the public flow is enabled.
   if (in_array($data['status'],['accepted','declined'],true)) {
