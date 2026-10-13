@@ -21,8 +21,9 @@ class OfferDecisionAuthorizationTest extends TestCase
   $application=Application::create(['tenant_id'=>$tenant->id,'job_id'=>$job->id,'candidate_id'=>$candidate->id,'stage'=>'offer']);
   $offer=Offer::create(['tenant_id'=>$tenant->id,'application_id'=>$application->id,'version'=>1,'currency'=>'GBP','status'=>'sent']);
   config()->set('talent.verified_offer_acceptance_enabled',true);
+  config()->set('talent.offer_delivery_enabled',true);
   $this->actingAs($user,'user');
-  foreach(['accepted','declined'] as $decision) {
+  foreach(['sent','accepted','declined'] as $decision) {
    $this->patch(route('admin.talent.offers.update',$offer->id),['status'=>$decision])->assertSessionHasErrors('status');
    $this->assertDatabaseHas('talent_offers',['id'=>$offer->id,'status'=>'sent','accepted_at'=>null]);
   }
