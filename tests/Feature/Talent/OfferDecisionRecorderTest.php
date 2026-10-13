@@ -43,6 +43,16 @@ class OfferDecisionRecorderTest extends TestCase
   $this->assertFalse(app(OfferDecisionRecorder::class)->record($tenant->id,$offer->id,$token,'declined',$candidate->id+999));
   $this->assertDatabaseHas('talent_offers',['id'=>$offer->id,'status'=>'sent']);
  }
+ public function test_expired_or_revoked_challenge_does_not_change_offer():void
+ {
+  [$tenant,$candidate,$offer,$token,$challenge]=$this->fixture();
+  config()->set('talent.verified_offer_acceptance_enabled',true);
+  DB::table('talent_offer_acceptance_challenges')->where('id',$challenge)->update(['expires_at'=>now()->subMinute()]);
+  $this->assertFalse(app(OfferDecisionRecorder::class)->record($tenant->id,$offer->id,$token,'accepted',$candidate->id));
+  DB::table('talent_offer_acceptance_challenges')->where('id',$challenge)->update(['expires_at'=>now()->addHour(),'revoked_at'=>now()]);
+  $this->assertFalse(app(OfferDecisionRecorder::class)->record($tenant->id,$offer->id,$token,'accepted',$candidate->id));
+  $this->assertDatabaseHas('talent_offers',['id'=>$offer->id,'status'=>'sent']);
+ }
  public function test_disabled_feature_cannot_decide():void
  {
   [$tenant,$candidate,$offer,$token]=$this->fixture();
