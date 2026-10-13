@@ -53,6 +53,22 @@ class OfferDecisionRecorderTest extends TestCase
   $this->assertFalse(app(OfferDecisionRecorder::class)->record($tenant->id,$offer->id,$token,'accepted',$candidate->id));
   $this->assertDatabaseHas('talent_offers',['id'=>$offer->id,'status'=>'sent']);
  }
+ public function test_cross_tenant_decision_is_rejected():void
+ {
+  [$tenant,$candidate,$offer,$token]=$this->fixture();
+  $other=Tenant::create(['slug'=>'other-decision-tenant','name'=>'Other Tenant']);
+  config()->set('talent.verified_offer_acceptance_enabled',true);
+  $this->assertFalse(app(OfferDecisionRecorder::class)->record($other->id,$offer->id,$token,'accepted',$candidate->id));
+  $this->assertDatabaseHas('talent_offers',['id'=>$offer->id,'status'=>'sent']);
+ }
+ public function test_decline_consumes_challenge_and_records_decision():void
+ {
+  [$tenant,$candidate,$offer,$token,$challenge]=$this->fixture();
+  config()->set('talent.verified_offer_acceptance_enabled',true);
+  $this->assertTrue(app(OfferDecisionRecorder::class)->record($tenant->id,$offer->id,$token,'declined',$candidate->id));
+  $this->assertDatabaseHas('talent_offers',['id'=>$offer->id,'status'=>'declined','accepted_at'=>null]);
+  $this->assertDatabaseHas('talent_offer_challenge_audit',['challenge_id'=>$challenge,'action'=>'declined']);
+ }
  public function test_disabled_feature_cannot_decide():void
  {
   [$tenant,$candidate,$offer,$token]=$this->fixture();
