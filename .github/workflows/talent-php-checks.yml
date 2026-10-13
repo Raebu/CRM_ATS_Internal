@@ -6,6 +6,7 @@ on:
       - 'app/Models/Talent/**'
       - 'app/Services/Talent/**'
       - 'app/Jobs/Talent/**'
+      - 'app/Console/Commands/TalentProductionPreflight.php'
       - 'app/Console/Commands/DispatchTalentOutbox.php'
       - 'app/Console/Commands/CreateTalentInterviewReminders.php'
       - 'database/migrations/2026_10_12_12*.php'
@@ -46,7 +47,7 @@ jobs:
           cp .env.example .env
           php artisan key:generate --force
       - name: Run policy unit tests
-        run: vendor/bin/pest tests/Unit/Talent/RecruitmentTransitionsTest.php tests/Unit/Talent/TalentAuthorizationTest.php tests/Unit/Talent/ClamAvScannerTest.php tests/Unit/Talent/EmailTemplateCatalogTest.php tests/Unit/Talent/VacancyTransitionsTest.php tests/Unit/Talent/RecruitmentEmailSenderTest.php tests/Unit/Talent/InterviewCalendarInviteTest.php
+        run: vendor/bin/pest tests/Unit/Talent/RecruitmentTransitionsTest.php tests/Unit/Talent/TalentAuthorizationTest.php tests/Unit/Talent/ClamAvScannerTest.php tests/Unit/Talent/EmailTemplateCatalogTest.php tests/Unit/Talent/VacancyTransitionsTest.php tests/Unit/Talent/RecruitmentEmailSenderTest.php tests/Unit/Talent/InterviewCalendarInviteTest.php tests/Unit/Talent/ProductionReadinessTest.php
 
   mysql-integration:
     runs-on: ubuntu-latest
