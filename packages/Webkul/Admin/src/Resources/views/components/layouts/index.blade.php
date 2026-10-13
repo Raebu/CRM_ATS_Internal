@@ -135,7 +135,7 @@
                     <!-- Powered By -->
                     <div class="fixed bottom-0 left-0 right-0 z-1">
                         <div class="border-t bg-white py-5 text-center text-sm font-normal dark:border-gray-800 dark:bg-gray-900 dark:text-white max-md:py-3">
-                            <p>{!! core()->sanitizeHtml(core()->getConfigData('general.settings.footer.label')) !!}</p>
+                            <p class="font-medium text-gray-700 dark:text-gray-200">The Raeburn Group <span aria-hidden="true" class="mx-2 text-gray-400">·</span> Raeburn Talent <span aria-hidden="true" class="mx-2 text-gray-400">·</span> &copy; {{ date('Y') }} The Raeburn Group. All rights reserved.</p>
                         </div>
                     </div>
                 @endif
