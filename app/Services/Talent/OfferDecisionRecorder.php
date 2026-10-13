@@ -23,6 +23,7 @@ final class OfferDecisionRecorder
    if(!$offer || $offer->status!=='sent')return false;
    $application=$offer->application()->where('tenant_id',$tenantId)->first();
    if(!$application || (int)$application->candidate_id!==$verifiedCandidateId)return false;
+   if (\App\Services\Talent\CandidatePrivacyHold::active($tenantId,$verifiedCandidateId)) return false;
    $challenge=DB::table('talent_offer_acceptance_challenges')
     ->where('tenant_id',$tenantId)->where('offer_id',$offerId)
     ->where('token_hash',hash('sha256',$token))
