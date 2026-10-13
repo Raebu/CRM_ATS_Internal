@@ -90,16 +90,16 @@ class RecruitmentOperationsController extends Controller
   if ($data['status']==='sent' && !config('talent.offer_delivery_enabled',false)) {
    throw \Illuminate\Validation\ValidationException::withMessages(['status'=>'Offer delivery is disabled until verified dispatch evidence is integrated.']);
   }
-  // Candidate acceptance requires a verified candidate-facing acceptance workflow.
-  if ($data['status']==='accepted' && !config('talent.verified_offer_acceptance_enabled',false)) {
-   throw \Illuminate\Validation\ValidationException::withMessages(['status'=>'Verified candidate acceptance is not enabled.']);
+  // Never allow a recruiter to impersonate the candidate, even if the public flow is enabled.
+  if (in_array($data['status'],['accepted','declined'],true)) {
+   throw \Illuminate\Validation\ValidationException::withMessages(['status'=>'Candidate decisions must come from the separately verified candidate workflow.']);
   }
   DB::transaction(function()use($tenant,$offer,$data){
    $locked=Offer::where('tenant_id',$tenant->id)->lockForUpdate()->findOrFail($offer->id);
    $previous=$locked->status;
    RecruitmentTransitions::offer($previous,$data['status']);
    $locked->update(['status'=>$data['status'],
-    'accepted_at'=>$data['status']==='accepted' ? now() : $locked->accepted_at]);
+    'accepted_at'=>$locked->accepted_at]);
    $this->record($tenant->id,'offer.status_changed.v1','offer',$offer->id,['previous'=>$previous,'status'=>$locked->status]);
   });
   return back()->with('success','Offer updated.');
