@@ -18,6 +18,7 @@ class DocumentUploadWorkflowTest extends TestCase
     private function application(): Application
     {
         $this->withoutMiddleware(CanInstall::class);
+        config()->set('talent.cv_uploads_enabled', true);
         $role=Role::create(['name'=>'Synthetic Document Admin','permission_type'=>'all','permissions'=>[]]);
         $user=User::create([
             'name'=>'Synthetic Document Admin',
