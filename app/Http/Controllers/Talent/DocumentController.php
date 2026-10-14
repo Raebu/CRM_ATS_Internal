@@ -16,6 +16,7 @@ class DocumentController extends Controller
 {
     public function upload(Request $request, int $id, ClamAvScanner $scanner)
     {
+        abort_unless(config('talent.cv_uploads_enabled', false), 503, 'CV uploads are temporarily disabled pending malware-scanning verification.');
         $tenant = Tenant::where('slug', 'raeburn-group')->firstOrFail();
         $application = Application::with(['candidate', 'job'])
             ->where('tenant_id', $tenant->id)->findOrFail($id);
