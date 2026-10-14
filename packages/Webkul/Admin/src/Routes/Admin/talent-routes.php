@@ -27,6 +27,7 @@ Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->prefix('tale
 });
 
 Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->prefix('talent')->name('admin.talent.')->group(function () {
+    Route::post('/applications/{id}/documents', [\App\Http\Controllers\Talent\DocumentController::class, 'upload'])->name('documents.upload');
     Route::get('/documents/{id}/download', [\App\Http\Controllers\Talent\DocumentController::class, 'download'])->name('documents.download');
 });
 
