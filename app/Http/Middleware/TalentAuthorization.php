@@ -28,6 +28,7 @@ class TalentAuthorization
         'admin.talent.privacy.store' => 'talent.privacy.create',
         'admin.talent.privacy.update' => 'talent.privacy.manage',
         'admin.talent.documents.download' => 'talent.documents.view',
+        'admin.talent.documents.upload' => 'talent.documents.create',
         'admin.talent.jobs.store' => 'talent.jobs.create',
         'admin.talent.jobs.update' => 'talent.jobs.edit',
         'admin.talent.candidates.store' => 'talent.candidates.create',
