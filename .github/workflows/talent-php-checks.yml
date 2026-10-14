@@ -15,9 +15,9 @@ on:
   workflow_dispatch:
 jobs:
   syntax:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -32,9 +32,9 @@ jobs:
             xargs -0 -n1 php -l
           for file in database/migrations/2026_10_12_12*.php; do php -l "$file"; done
   transitions:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
@@ -50,7 +50,7 @@ jobs:
         run: vendor/bin/pest tests/Unit/Talent/RecruitmentTransitionsTest.php tests/Unit/Talent/TalentAuthorizationTest.php tests/Unit/Talent/ClamAvScannerTest.php tests/Unit/Talent/EmailTemplateCatalogTest.php tests/Unit/Talent/VacancyTransitionsTest.php tests/Unit/Talent/RecruitmentEmailSenderTest.php tests/Unit/Talent/InterviewCalendarInviteTest.php tests/Unit/Talent/ProductionReadinessTest.php
 
   mysql-integration:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       mysql:
         image: mysql:8.0
@@ -67,7 +67,7 @@ jobs:
           --health-timeout=5s
           --health-retries=12
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
