@@ -14,6 +14,15 @@
 <select name="stage" aria-label="New application stage">@foreach(['applied','screening','review','shortlisted','interview','final_interview','offer','hired','rejected','withdrawn','on_hold','talent_pool'] as $stage)<option value="{{ $stage }}" @selected($application->stage===$stage)>{{ ucwords(str_replace('_',' ',$stage)) }}</option>@endforeach</select>
 <button class="primary-button">Update stage</button></form>
 <h3 class="font-semibold mt-3">Stage history</h3><ol>@forelse($history as $entry)<li>{{ $entry->created_at }} — {{ $entry->from_stage ?? 'New' }} → {{ $entry->to_stage }}</li>@empty<li>No stage changes yet</li>@endforelse</ol></section>
+<section class="rounded bg-white p-4 dark:bg-gray-900"><h2 class="text-lg font-semibold">CV documents</h2>
+<p class="text-sm">Private PDF documents only, maximum 4 MB. Each file is scanned before it can be downloaded. External candidate uploads remain disabled.</p>
+<form method="POST" enctype="multipart/form-data" action="{{ route('admin.talent.documents.upload',$application->id) }}" class="grid gap-2 max-w-lg">@csrf
+<label>PDF CV <input type="file" name="cv" accept="application/pdf,.pdf" required></label>
+<button class="primary-button">Scan and save CV</button></form>
+<ul class="mt-3">@forelse($documents as $document)<li class="py-1">{{ $document->original_name }} — {{ $document->scan_status }}
+@if($document->scan_status==='clean')<a class="underline" href="{{ route('admin.talent.documents.download',$document->id) }}">Download securely</a>@endif
+</li>@empty<li>No CV documents uploaded</li>@endforelse</ul>
+</section>
 <section class="rounded bg-white p-4 dark:bg-gray-900"><h2 class="text-lg font-semibold">Interviews</h2>
 @forelse($interviews as $interview)
 <div class="border-b py-3"><strong>{{ $interview->title }}</strong> · {{ $interview->starts_at }} – {{ $interview->ends_at }} · {{ $interview->status }} <a class="underline" href="{{ route('admin.talent.interviews.calendar',$interview->id) }}">Download calendar invite</a>
