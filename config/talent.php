@@ -1,5 +1,6 @@
 <?php
 return [
+ 'cv_uploads_enabled' => env('TALENT_CV_UPLOADS_ENABLED', false),
  'offer_delivery_enabled' => env('TALENT_OFFER_DELIVERY_ENABLED', false),
  'resend_api_key' => env('TALENT_RESEND_API_KEY'),
  'resend_from' => env('TALENT_RESEND_FROM'),
