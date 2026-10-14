@@ -12,7 +12,7 @@ User=raeburnstaging
 Group=raeburnstaging
 WorkingDirectory=/var/www/raeburn-talent-staging
 ExecStart=/usr/bin/php artisan queue:work database --queue=default --sleep=3 --tries=3 --timeout=90 --max-time=3600 --no-interaction
-Restart=on-failure
+Restart=always
 RestartSec=10
 UMask=0077
 NoNewPrivileges=true
