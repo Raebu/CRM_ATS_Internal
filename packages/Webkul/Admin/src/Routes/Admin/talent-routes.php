@@ -58,3 +58,10 @@ Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->prefix('tale
  Route::post('/applications/{id}/placements','store')->name('placements.store');
  Route::patch('/placements/{id}/tasks/{taskId}','task')->name('placements.tasks.update');
 });
+
+Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->prefix('talent/privacy')->name('admin.talent.erasure.')->controller(\App\Http\Controllers\Talent\ErasureReviewController::class)->group(function () {
+ Route::get('/{id}/erasure-review','show')->name('show');
+ Route::post('/{id}/erasure-review','prepare')->name('prepare');
+ Route::patch('/{id}/erasure-review','save')->name('save');
+ Route::post('/{id}/erasure-review/approve','approve')->name('approve');
+});
