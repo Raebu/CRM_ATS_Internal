@@ -246,6 +246,16 @@ class DocumentController extends Controller
             && str_starts_with($document->storage_key, 'talent-private/')
             && !str_contains($document->storage_key, '..'), 404);
 
+        // Only an approved profile explicitly linked to this document may be served.
+        abort_unless(CvProfile::where('tenant_id', $tenant->id)
+            ->where('candidate_id', $document->candidate_id)
+            ->where('application_id', $document->application_id)
+            ->where('source_document_id', $document->id)
+            ->where('status', 'approved')
+            ->whereNotNull('approved_at')
+            ->whereNotNull('approved_by')
+            ->exists(), 404);
+
         abort_unless(Storage::disk('local')->exists($document->storage_key), 404);
 
         DomainEvent::create([
