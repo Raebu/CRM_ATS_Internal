@@ -4,6 +4,7 @@ namespace Tests\Feature\Talent;
 
 use App\Models\Talent\{Application,Candidate,Document,Job,Tenant};
 use App\Services\Talent\ClamAvScanner;
+use App\Services\Talent\PdfSanitizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -42,11 +43,14 @@ class DocumentUploadWorkflowTest extends TestCase
     {
         Storage::fake('local');
         $application=$this->application();
-        $this->mock(ClamAvScanner::class)->shouldReceive('scan')->once()->andReturn('clean');
+        $this->mock(ClamAvScanner::class)->shouldReceive('scan')->twice()->andReturn('clean');
+        $this->mock(PdfSanitizer::class)->shouldReceive('sanitize')->once()->andReturnUsing(
+            fn ($src, $dst) => Storage::disk('local')->put($dst, "%PDF-1.4\n% reconstructed\n%%EOF\n")
+        );
         $this->post(route('admin.talent.documents.upload',$application->id),['cv'=>$this->pdf()])->assertRedirect();
         $document=Document::firstOrFail();
         $this->assertSame('clean',$document->scan_status);
-        $this->assertStringStartsWith('talent-private/',$document->storage_key);
+        $this->assertStringStartsWith('talent-private/sanitized/',$document->storage_key);
         Storage::disk('local')->assertExists($document->storage_key);
         $this->get(route('admin.talent.documents.download',$document->id))->assertOk();
     }
@@ -56,6 +60,7 @@ class DocumentUploadWorkflowTest extends TestCase
         Storage::fake('local');
         $application=$this->application();
         $this->mock(ClamAvScanner::class)->shouldReceive('scan')->once()->andReturn('infected');
+        $this->mock(PdfSanitizer::class)->shouldNotReceive('sanitize');
         $this->from(route('admin.talent.applications.show',$application->id))
             ->post(route('admin.talent.documents.upload',$application->id),['cv'=>$this->pdf()])
             ->assertSessionHasErrors('cv');
@@ -68,11 +73,68 @@ class DocumentUploadWorkflowTest extends TestCase
         Storage::fake('local');
         $application=$this->application();
         $this->mock(ClamAvScanner::class)->shouldReceive('scan')->once()->andThrow(new \RuntimeException('Unavailable'));
+        $this->mock(PdfSanitizer::class)->shouldNotReceive('sanitize');
         $this->from(route('admin.talent.applications.show',$application->id))
             ->post(route('admin.talent.documents.upload',$application->id),['cv'=>$this->pdf()])
             ->assertSessionHasErrors('cv');
         $this->assertSame(0,Document::count());
         $this->assertSame([],Storage::disk('local')->allFiles('talent-private'));
+    }
+
+    public function test_sanitizer_failure_discards_all_copies(): void
+    {
+        Storage::fake('local');
+        $application = $this->application();
+        $this->mock(ClamAvScanner::class)->shouldReceive('scan')->once()->andReturn('clean');
+        $this->mock(PdfSanitizer::class)->shouldReceive('sanitize')->once()->andThrow(new \RuntimeException('Sandbox unavailable'));
+        $this->post(route('admin.talent.documents.upload', $application->id), ['cv' => $this->pdf()])
+            ->assertSessionHasErrors('cv');
+        $this->assertSame(0, Document::count());
+        $this->assertSame([], Storage::disk('local')->allFiles('talent-private'));
+    }
+
+    public function test_reconstructed_pdf_scan_failure_discards_all_copies(): void
+    {
+        Storage::fake('local');
+        $application = $this->application();
+        $this->mock(ClamAvScanner::class)->shouldReceive('scan')->twice()->andReturn('clean', 'infected');
+        $this->mock(PdfSanitizer::class)->shouldReceive('sanitize')->once()->andReturnUsing(
+            fn ($src, $dst) => Storage::disk('local')->put($dst, "%PDF-1.4\\n%%EOF\\n")
+        );
+        $this->post(route('admin.talent.documents.upload', $application->id), ['cv' => $this->pdf()])
+            ->assertSessionHasErrors('cv');
+        $this->assertSame(0, Document::count());
+        $this->assertSame([], Storage::disk('local')->allFiles('talent-private'));
+    }
+
+    public function test_legacy_clean_original_is_never_downloadable(): void
+    {
+        Storage::fake('local');
+        $application = $this->application();
+        $key = 'talent-private/legacy-test.pdf';
+        Storage::disk('local')->put($key, "%PDF-1.4\\n%%EOF\\n");
+        $doc = Document::create([
+            'tenant_id' => $application->tenant_id,
+            'candidate_id' => $application->candidate_id,
+            'application_id' => $application->id,
+            'disk' => 'local',
+            'storage_key' => $key,
+            'original_name' => 'old.pdf',
+            'mime_type' => 'application/pdf',
+            'size_bytes' => 20,
+            'scan_status' => 'clean',
+        ]);
+        $this->get(route('admin.talent.documents.download', $doc->id))->assertNotFound();
+    }
+
+    public function test_uploads_disabled_by_default(): void
+    {
+        Storage::fake('local');
+        $application = $this->application();
+        config()->set('talent.cv_uploads_enabled', false);
+        $this->post(route('admin.talent.documents.upload', $application->id), ['cv' => $this->pdf()])
+            ->assertStatus(503);
+        $this->assertSame(0, Document::count());
     }
 
     public function test_non_pdf_is_rejected_before_storage(): void
