@@ -97,6 +97,10 @@ class DocumentController extends Controller
             if ($ai->enabled()) {
                 $suggestions = $ai->suggest($extractedText);
                 foreach ($suggestions['fields'] as $field=>$value) {
+                    if (in_array($field,['employment_entries','education_entries'],true)) {
+                        if (is_array($value) && count($value)>0 && empty($fields[$field])) $fields[$field]=$value;
+                        continue;
+                    }
                     if (!is_string($value) || trim($value)==='') continue;
                     if (!isset($fields[$field]) || $fields[$field]==='') {
                         $fields[$field] = $value;
