@@ -72,7 +72,8 @@ class DocumentUploadWorkflowTest extends TestCase
         ]);
         $this->mock(ClamAvScanner::class)->shouldReceive('scan')->once()->andReturn('clean');
         $response = $this->post(route('admin.talent.cv-profiles.approve', $profile->id), [
-            'full_name' => 'Verified Candidate',
+            'first_name' => 'Verified',
+            'last_name' => 'Candidate',
             'skills' => 'PHP, SQL',
             'employment' => 'Verified work history',
         ]);
