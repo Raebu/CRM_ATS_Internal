@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Talent;
 use App\Http\Controllers\Controller;
 use App\Models\Talent\{Application, Document, DomainEvent, Tenant};
 use App\Services\Talent\ClamAvScanner;
+use App\Services\Talent\PdfSanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -14,7 +15,7 @@ use Illuminate\Support\Str;
 
 class DocumentController extends Controller
 {
-    public function upload(Request $request, int $id, ClamAvScanner $scanner)
+    public function upload(Request $request, int $id, ClamAvScanner $scanner, PdfSanitizer $sanitizer)
     {
         abort_unless(config('talent.cv_uploads_enabled', false), 503, 'CV uploads are temporarily disabled pending malware-scanning verification.');
         $tenant = Tenant::where('slug', 'raeburn-group')->firstOrFail();
@@ -40,36 +41,44 @@ class DocumentController extends Controller
             throw ValidationException::withMessages(['cv' => 'A valid PDF document is required.']);
         }
 
-        $key = 'talent-private/'.$tenant->id.'/'.(string) Str::uuid().'.pdf';
+        $idempotentName = (string) Str::uuid().'.pdf';
+        $quarantineKey = 'talent-private/quarantine/'.$tenant->id.'/'.$idempotentName;
+        $key = 'talent-private/sanitized/'.$tenant->id.'/'.$idempotentName;
         $disk = Storage::disk('local');
         $uploaded = fopen($file->getRealPath(), 'rb');
         if (!is_resource($uploaded)) {
             throw ValidationException::withMessages(['cv' => 'The document could not be read.']);
         }
         try {
-            if (!$disk->put($key, $uploaded)) {
+            if (!$disk->put($quarantineKey, $uploaded)) {
                 throw new \RuntimeException('Private storage write failed.');
             }
         } finally {
             fclose($uploaded);
         }
 
-        // Scan synchronously: a worker processing only "default" cannot drain
-        // talent-scans, and no unscanned file must become downloadable.
+        // Fail closed: quarantine, scan original, reconstruct in isolation,
+        // scan reconstructed content, then and only then publish metadata.
+        $approved = false;
         try {
-            $status = $scanner->scan($key);
+            if ($scanner->scan($quarantineKey) !== 'clean') {
+                throw new \RuntimeException('Original PDF failed malware scanning.');
+            }
+            $sanitizer->sanitize($quarantineKey, $key);
+            if ($scanner->scan($key) !== 'clean') {
+                throw new \RuntimeException('Reconstructed PDF failed malware scanning.');
+            }
+            $approved = true;
         } catch (Throwable $e) {
-            $status = 'scan_failed';
             report($e);
-        }
-        if (!in_array($status, ['clean', 'infected'], true)) {
-            $status = 'scan_failed';
-        }
-        if ($status !== 'clean') {
-            $disk->delete($key);
             throw ValidationException::withMessages([
-                'cv' => 'The document failed security scanning and was not retained.',
+                'cv' => 'The document could not pass security validation and was not retained.',
             ]);
+        } finally {
+            $disk->delete($quarantineKey);
+            if (!$approved) {
+                $disk->delete($key);
+            }
         }
 
         try {
@@ -82,7 +91,7 @@ class DocumentController extends Controller
                     'storage_key' => $key,
                     'original_name' => basename($file->getClientOriginalName()),
                     'mime_type' => 'application/pdf',
-                    'size_bytes' => $file->getSize(),
+                    'size_bytes' => $disk->size($key),
                     'scan_status' => 'clean',
                 ]);
                 DomainEvent::create([
@@ -113,6 +122,8 @@ class DocumentController extends Controller
 
         // Never serve pending, failed, or otherwise unverified uploads.
         abort_unless($document->scan_status === 'clean', 404);
+        // Legacy clean documents were not reconstructed. Do not serve them.
+        abort_unless(str_starts_with($document->storage_key, 'talent-private/sanitized/'), 404);
 
         // Explicitly pin storage to the private local disk, not an attacker-supplied disk.
         abort_unless($document->disk === 'local'
