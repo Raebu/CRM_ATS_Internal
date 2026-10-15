@@ -40,6 +40,15 @@ final class CvEvidenceReconcilerTest extends TestCase
         $this->assertSame('review_required',$result['status']);
     }
 
+    public function test_duplicate_career_proposals_are_flagged(): void
+    {
+        $source='Engineer at Northstar 2020-2022';
+        $proposal=['field'=>'employment_entries','value'=>['company'=>'Northstar','title'=>'Engineer','start'=>'2020-01'],'source_excerpt'=>$source,'page'=>1];
+        $result=(new CvEvidenceReconciler())->reconcile($source,[$proposal,$proposal]);
+        $this->assertCount(1,$result['fields']['employment_entries']);
+        $this->assertContains('Duplicate employment_entries entry requires review.',$result['review_flags']);
+    }
+
     public function test_conflicting_proposals_are_flagged_not_overwritten(): void
     {
         $result=(new CvEvidenceReconciler())->reconcile('Engineer Director',[
