@@ -69,6 +69,15 @@ class PrivacyRequestController extends Controller
 
         DB::transaction(function () use ($tenant,$id,$data) {
             $entry = PrivacyRequest::where('tenant_id',$tenant->id)->lockForUpdate()->findOrFail($id);
+            // Do not claim erasure was fulfilled before an audited execution workflow exists.
+            if ($entry->request_type === 'erasure'
+                && $data['status'] === 'resolved'
+                && ($data['resolution_code'] ?? null) === 'fulfilled') {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'status' => 'Erasure cannot be marked fulfilled until verified deletion and retention review are implemented.',
+                ]);
+            }
+
             $allowed = [
                 'pending_verification'=>['identity_verified','declined'],
                 'identity_verified'=>['in_review'],
