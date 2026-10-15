@@ -7,7 +7,7 @@ use RuntimeException;
 
 class CvProfileBuilder
 {
-    public const KEYS = ['full_name','email','phone','location','professional_summary','employment','education','skills','qualifications','projects','languages'];
+    public const KEYS = ['full_name','email','phone','location','professional_summary','employment','education','skills','qualifications','projects','languages','additional_information'];
 
     /** Deterministic extraction: do not infer employment dates, qualifications or identity. */
     public function extract(string $text, ?string $knownName = null, ?string $knownEmail = null): array
@@ -54,8 +54,9 @@ class CvProfileBuilder
                 $section = $next;
                 continue;
             }
-            if ($section !== null && strlen($fields[$section]) < 15000) {
-                $fields[$section] .= ($fields[$section] === '' ? '' : "\n").$line;
+            $target = $section ?? 'additional_information';
+            if (strlen($fields[$target]) < 15000) {
+                $fields[$target] .= ($fields[$target] === '' ? '' : "\n").$line;
             }
         }
         $flags = [];
@@ -79,7 +80,7 @@ class CvProfileBuilder
         $html .= '<h1>'.$escaped($fields['full_name'] ?? '').'</h1>';
         $meta = array_filter([$fields['email'] ?? '', $fields['phone'] ?? '', $fields['location'] ?? ''],fn($x)=>trim((string)$x)!=='');
         $html .= '<div class="meta">'.$escaped(implode(' | ', $meta)).'</div>';
-        foreach (['professional_summary'=>'Professional profile','employment'=>'Employment history','education'=>'Education','skills'=>'Skills','qualifications'=>'Qualifications & certifications','projects'=>'Projects','languages'=>'Languages'] as $key=>$title) {
+        foreach (['professional_summary'=>'Professional profile','employment'=>'Employment history','education'=>'Education','skills'=>'Skills','qualifications'=>'Qualifications & certifications','projects'=>'Projects','languages'=>'Languages','additional_information'=>'Additional verified information'] as $key=>$title) {
             if (trim((string)($fields[$key] ?? '')) !== '') {
                 $html .= '<h2>'.$escaped($title).'</h2><div class="section">'.$escaped($fields[$key]).'</div>';
             }
