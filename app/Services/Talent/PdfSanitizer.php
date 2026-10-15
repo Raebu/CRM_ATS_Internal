@@ -107,7 +107,7 @@ SH;
                 '/usr/bin/bwrap', '--die-with-parent', '--new-session', '--unshare-net',
                 '--ro-bind', '/usr', '/usr', '--ro-bind', '/lib', '/lib',
                 '--ro-bind-try', '/lib64', '/lib64', '--ro-bind-try', '/bin', '/bin',
-                '--dev-bind', '/dev', '/dev', '--proc', '/proc',
+                '--dev', '/dev', '--proc', '/proc',
                 '--tmpfs', '/tmp', '--bind', $workspace, '/work',
                 '--chdir', '/work', '/bin/sh', '-c', $script,
             ]);
