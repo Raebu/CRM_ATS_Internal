@@ -33,3 +33,19 @@ Verify `bwrap --unshare-net` actually works under the staging service account wi
 ## Release controls
 
 There is an intentionally separate emergency upload block that may exist on the VPS from the earlier incident. Do not remove it before all checks pass. Deploy staging with backup + rollback, and keep `TALENT_CV_UPLOADS_ENABLED=false`. When staging validation is complete, authorise change control before removing the emergency block and separately enabling the feature. Production remains untouched.
+
+## Structured CV workflow (October 15 revision)
+
+Upload is explicitly **draft-only**. No recruiter-facing document is created on upload.
+
+1. Quarantine original PDF in tenant-specific private storage.
+2. ClamAV scan the original, validate PDF structures, and extract original textual content *inside* the isolated document-processing environment. A PDF of scanned page images may yield no text and must be populated manually.
+3. Rasterise to an intermediate PDF and rescan it. Delete both the original and the intermediate when preprocessing finishes or fails. Neither appears in the recruiter download list.
+4. Deterministically extract only straightforward contact data and recognised section headings. No ML/AI guesses, fabricated dates, inferred employment or unverified qualifications. Create `talent_cv_profiles` record as `review_required`, with review flags.
+5. Recruiter checks source-evidence accuracy and manually edits the full name, email, phone, location, professional summary, employment, education, skills, qualifications, projects and languages.
+6. On explicit approval, generate a brand-neutral, professional A4 PDF with DomPDF directly from HTML-escaped structured fields, scan it with ClamAV and store it as the sole downloadable CV. Mark profile approved with reviewer/time and emit a domain audit event.
+7. Any failure must leave the document unavailable for download. Public uploads remain disabled.
+
+**Not guaranteed:** semantic parsing of arbitrary layouts, OCR of images, data correctness, complete removal of preexisting backups/host logs, or that scan-clean means all conceivable malware is absent. Human verification is mandatory. Do not claim originals have been erased from immutable backups; use backup retention and erasure procedures.
+
+**Do not enable until:** latest GitHub MySQL integration suite is green, bwrap sandbox tools installed, manual end-to-end test on the real staging PHP user succeeds, role and tenant security review completes, and existing originals receive retention/quarantine review. The deployment has NOT occurred merely because code is committed.
