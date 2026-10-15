@@ -106,7 +106,8 @@ class CvProfileBuilder
         foreach (preg_split('/\R/u', $section) ?: [] as $line) {
             $line = trim($line);
             if ($line === '') continue;
-            if (preg_match('/^(.{2,120}?)\s+[-–—]\s+(.{2,120})$/u', $line, $match)) {
+            if (!preg_match('/^[A-Za-z]+\s+\d{4}\s+[-–—]\s+(?:Present|Current|[A-Za-z]+\s+\d{4})$/iu', $line)
+                && preg_match('/^(.{2,120}?)\s+[-–—]\s+(.{2,120})$/u', $line, $match)) {
                 if ($current !== null) $entries[] = $current;
                 $current = ['title' => trim($match[1]), 'company' => trim($match[2])];
                 continue;
