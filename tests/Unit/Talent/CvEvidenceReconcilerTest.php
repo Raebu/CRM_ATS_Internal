@@ -26,6 +26,20 @@ final class CvEvidenceReconcilerTest extends TestCase
         $this->assertCount(3,$result['review_flags']);
     }
 
+    public function test_multiple_evidenced_jobs_are_retained_as_separate_unapproved_records(): void
+    {
+        $source="Engineer at Alpha 2020-2022. Manager at Beta 2022-Present.";
+        $proposals=[
+            ['field'=>'employment_entries','value'=>['company'=>'Alpha','title'=>'Engineer','start'=>'2020-01','end'=>'2022-01'],'source_excerpt'=>'Engineer at Alpha 2020-2022','page'=>1],
+            ['field'=>'employment_entries','value'=>['company'=>'Beta','title'=>'Manager','start'=>'2022-02','present'=>'yes'],'source_excerpt'=>'Manager at Beta 2022-Present','page'=>1],
+        ];
+        $result=(new CvEvidenceReconciler())->reconcile($source,$proposals);
+        $this->assertCount(2,$result['fields']['employment_entries']);
+        $this->assertSame('Alpha',$result['fields']['employment_entries'][0]['company']);
+        $this->assertSame('Beta',$result['fields']['employment_entries'][1]['company']);
+        $this->assertSame('review_required',$result['status']);
+    }
+
     public function test_conflicting_proposals_are_flagged_not_overwritten(): void
     {
         $result=(new CvEvidenceReconciler())->reconcile('Engineer Director',[
