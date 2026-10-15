@@ -15,7 +15,7 @@ use Symfony\Component\Process\Process;
  */
 class PdfSanitizer
 {
-    public function sanitize(string $sourceKey, string $outputKey): void
+    public function sanitize(string $sourceKey, string $outputKey): string
     {
         $disk = Storage::disk('local');
         foreach ([$sourceKey, $outputKey] as $key) {
@@ -82,6 +82,8 @@ if grep -Eq '"/(JavaScript|JS|EmbeddedFiles|Launch|RichMedia|OpenAction|AA|XFA|A
 fi
 qpdf --is-encrypted /work/input.pdf >/dev/null 2>&1 && exit 31
 pdfinfo /work/input.pdf > /work/info.txt
+# Text extraction happens only inside the same isolated process, never on the host.
+pdftotext -layout -enc UTF-8 /work/input.pdf /work/extracted.txt >/dev/null 2>&1
 pages=$(sed -n 's/^Pages:[[:space:]]*//p' /work/info.txt | head -n1)
 case "$pages" in ''|*[!0-9]*) exit 32;; esac
 [ "$pages" -ge 1 ] && [ "$pages" -le 20 ] || exit 33
@@ -110,6 +112,10 @@ SH;
             if (!is_file($result) || filesize($result) < 100 || filesize($result) > 12 * 1024 * 1024) {
                 throw new RuntimeException('Reconstructed PDF invalid or too large.');
             }
+            $extractedText = file_get_contents($workspace.'/extracted.txt');
+            if ($extractedText === false || strlen($extractedText) > 200000) {
+                throw new RuntimeException('CV text extraction unavailable or exceeds limits.');
+            }
             $stream = fopen($result, 'rb');
             if (!is_resource($stream)) {
                 throw new RuntimeException('Cannot read reconstructed PDF.');
@@ -121,6 +127,7 @@ SH;
             } finally {
                 fclose($stream);
             }
+            return $extractedText;
         } finally {
             foreach (glob($workspace.'/*') ?: [] as $file) {
                 if (is_file($file)) {
