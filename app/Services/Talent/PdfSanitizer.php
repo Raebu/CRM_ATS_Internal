@@ -26,7 +26,7 @@ class PdfSanitizer
         if ($sourceKey === $outputKey) {
             throw new RuntimeException('Source and output must differ.');
         }
-        foreach (['/usr/bin/bwrap', '/usr/bin/pdfinfo', '/usr/bin/pdftoppm', '/usr/bin/qpdf', '/usr/bin/python3'] as $binary) {
+        foreach (['/usr/bin/bwrap', '/usr/bin/pdfinfo', '/usr/bin/pdftoppm', '/usr/bin/qpdf', '/usr/bin/python3', '/usr/bin/tesseract'] as $binary) {
             if (!is_executable($binary)) {
                 throw new RuntimeException('PDF isolation dependencies unavailable.');
             }
@@ -92,7 +92,7 @@ pdftoppm -r 110 -f 1 -l "$pages" -png /work/input.pdf /work/page >/dev/null 2>&1
 set -- /work/page-*.png
 [ -f "$1" ] || exit 34
 # OCR only if the document has little machine-readable text. Keep isolated.
-if [ "$(wc -c < /work/extracted.txt)" -lt 80 ] && [ -x /usr/bin/tesseract ]; then
+if [ "$(wc -c < /work/extracted.txt)" -lt 80 ]; then
   : > /work/ocr.txt
   for page in "$@"; do
     tesseract "$page" stdout 2>/dev/null >> /work/ocr.txt || exit 36
