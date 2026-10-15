@@ -91,6 +91,15 @@ case "$pages" in ''|*[!0-9]*) exit 32;; esac
 pdftoppm -r 110 -f 1 -l "$pages" -png /work/input.pdf /work/page >/dev/null 2>&1
 set -- /work/page-*.png
 [ -f "$1" ] || exit 34
+# OCR only if the document has little machine-readable text. Keep isolated.
+if [ "$(wc -c < /work/extracted.txt)" -lt 80 ] && [ -x /usr/bin/tesseract ]; then
+  : > /work/ocr.txt
+  for page in "$@"; do
+    tesseract "$page" stdout 2>/dev/null >> /work/ocr.txt || exit 36
+    printf '\n' >> /work/ocr.txt
+  done
+  mv /work/ocr.txt /work/extracted.txt
+fi
 python3 -m img2pdf "$@" -o /work/rebuilt.pdf
 qpdf --check /work/rebuilt.pdf >/dev/null 2>&1
 SH;
