@@ -157,6 +157,63 @@ class DocumentUploadWorkflowTest extends TestCase
         $this->get(route('admin.talent.documents.download', $doc->id))->assertNotFound();
     }
 
+    public function test_clean_sanitized_document_without_approved_profile_is_not_downloadable(): void
+    {
+        Storage::fake('local');
+        $application = $this->application();
+        $key = 'talent-private/sanitized/'.$application->tenant_id.'/unapproved.pdf';
+        Storage::disk('local')->put($key, "%PDF-1.4\n%%EOF\n");
+        $document = Document::create([
+            'tenant_id' => $application->tenant_id,
+            'candidate_id' => $application->candidate_id,
+            'application_id' => $application->id,
+            'disk' => 'local',
+            'storage_key' => $key,
+            'original_name' => 'unapproved.pdf',
+            'mime_type' => 'application/pdf',
+            'size_bytes' => 20,
+            'scan_status' => 'clean',
+        ]);
+        $this->get(route('admin.talent.documents.download', $document->id))->assertNotFound();
+        $this->assertSame([], \App\Models\Talent\DomainEvent::where('event_type', 'document.accessed.v1')->get()->all());
+    }
+
+    public function test_draft_or_mismatched_profile_cannot_authorize_download(): void
+    {
+        Storage::fake('local');
+        $application = $this->application();
+        $key = 'talent-private/sanitized/'.$application->tenant_id.'/mismatch.pdf';
+        Storage::disk('local')->put($key, "%PDF-1.4\n%%EOF\n");
+        $document = Document::create([
+            'tenant_id' => $application->tenant_id,
+            'candidate_id' => $application->candidate_id,
+            'application_id' => $application->id,
+            'disk' => 'local',
+            'storage_key' => $key,
+            'original_name' => 'mismatch.pdf',
+            'mime_type' => 'application/pdf',
+            'size_bytes' => 20,
+            'scan_status' => 'clean',
+        ]);
+        $profile = CvProfile::create([
+            'tenant_id' => $application->tenant_id,
+            'candidate_id' => $application->candidate_id,
+            'application_id' => $application->id,
+            'source_document_id' => $document->id,
+            'status' => 'review_required',
+            'fields' => [],
+        ]);
+        $url = route('admin.talent.documents.download', $document->id);
+        $this->get($url)->assertNotFound();
+        $profile->update([
+            'status' => 'approved',
+            'approved_at' => now(),
+            'approved_by' => auth()->guard('user')->id(),
+            'candidate_id' => $application->candidate_id + 1000,
+        ]);
+        $this->get($url)->assertNotFound();
+    }
+
     public function test_uploads_disabled_by_default(): void
     {
         Storage::fake('local');
