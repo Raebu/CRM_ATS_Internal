@@ -90,6 +90,31 @@ class DocumentController extends Controller
             $application->candidate->name,
             $application->candidate->email
         );
+        // AI is an optional, separately approved assistive source, never authoritative.
+        // Fail safely to manual review if an approved provider is unavailable.
+        try {
+            $ai = app(\App\Services\Talent\CvAiAssistant::class);
+            if ($ai->enabled()) {
+                $suggestions = $ai->suggest($extractedText);
+                foreach ($suggestions['fields'] as $field=>$value) {
+                    if (!is_string($value) || trim($value)==='') continue;
+                    if (!isset($fields[$field]) || $fields[$field]==='') {
+                        $fields[$field] = $value;
+                    } elseif ($fields[$field]!==$value) {
+                        $flags[]='AI extraction conflicts with existing '.$field.'; verify against source.';
+                    }
+                }
+                $flags=array_merge($flags,$suggestions['review_flags']);
+            }
+        } catch (Throwable $e) {
+            report($e);
+            $flags[]='AI assistance unavailable; review all extracted information manually.';
+        }
+        $coverage=app(\App\Services\Talent\CvCoverageAuditor::class)->audit($extractedText,[]);
+        if ($coverage['review_required']) {
+            $flags[]='Unmapped source lines require review before approval.';
+            $fields['additional_information']=trim(($fields['additional_information']??'')."\n".implode("\n",$coverage['unmapped_lines']));
+        }
         unset($extractedText);
 
         CvProfile::create([
