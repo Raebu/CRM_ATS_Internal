@@ -30,3 +30,17 @@ Development branch, **not deployed**. Existing PDF rasterisation + text extracti
 - Preserve a safe temporary evidence representation while review is pending. Never destroy the only reviewable evidence before approval without an alternative.
 
 Do not enable staging CV processing or merge into production until end-to-end testing and security review pass.
+
+## October 15 implementation inventory (verified from repository)
+
+- `CvFieldSchema`: full checklist and repeatable employment and education collections (100-item server validation cap per collection).
+- `resources/views/talent/partials/cv-review-fields.blade.php`: editable form and Add/Remove job/qualification controls.
+- `DetailedCvRenderer`: fresh ATS-readable PDF generated from verified fields.
+- `PdfSanitizer`: sandbox reconstruction, PDF structure check, text extraction and local Tesseract fallback (requires tesseract installed).
+- `CvAiAssistant`: external HTTPS adapter default-off and deny-unapproved-host; **not enabled** and no approved AI service integrated yet.
+- `CvEvidenceReconciler`: reject unsupported single-value field proposals without matching source excerpts. It does NOT yet support nested multi-job AI proposals.
+- `CvCoverageAuditor`: conservative unmapped-line review. It is a heuristic, not proof of completeness.
+- `DocumentController`: draft/approval routes and final scan before recruiter-facing output.
+- `tests/Unit/Talent/CvAiAssistantTest.php`: verifies no external transmission when disabled or unapproved.
+
+**Still required for launch:** page-grounded evidence and bounding boxes, strong job/education entity clustering, approved AI processor or isolated local model, security limits and accurate handling of genuinely arbitrary CV layouts; real Contabo sandbox + OCR dependency checks; diverse sample benchmarking. No claim of exhaustive extraction should be made.
