@@ -104,7 +104,7 @@ class DocumentController extends Controller
         return back()->with('success', 'Original destroyed after secure extraction. Review and approve the structured CV before it can be downloaded.');
     }
 
-    public function approve(Request $request, int $id, ClamAvScanner $scanner, CvProfileBuilder $builder)
+    public function approve(Request $request, int $id, ClamAvScanner $scanner, \App\Services\Talent\DetailedCvRenderer $renderer)
     {
         abort_unless(config('talent.cv_uploads_enabled', false), 503);
         $tenant = Tenant::where('slug', 'raeburn-group')->firstOrFail();
@@ -147,7 +147,7 @@ class DocumentController extends Controller
         $key = 'talent-private/sanitized/'.$tenant->id.'/'.(string) Str::uuid().'.pdf';
         $disk = Storage::disk('local');
         try {
-            $pdf = $builder->render($fields);
+            $pdf = $renderer->render($fields);
             if (!$disk->put($key, $pdf)) {
                 throw new \RuntimeException('Cannot save structured CV.');
             }
