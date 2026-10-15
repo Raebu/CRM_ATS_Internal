@@ -15,12 +15,39 @@
 <button class="primary-button">Update stage</button></form>
 <h3 class="font-semibold mt-3">Stage history</h3><ol>@forelse($history as $entry)<li>{{ $entry->created_at }} — {{ $entry->from_stage ?? 'New' }} → {{ $entry->to_stage }}</li>@empty<li>No stage changes yet</li>@endforelse</ol></section>
 <section class="rounded bg-white p-4 dark:bg-gray-900"><h2 class="text-lg font-semibold">CV documents</h2>
-<p class="text-sm">Private PDF documents only, maximum 4 MB. Each file is scanned before it can be downloaded. External candidate uploads remain disabled.</p>
+<p class="text-sm">Private PDF documents only, maximum 4 MB. Uploads are quarantined, scanned, isolated, extracted into a form and destroyed. Only approved formatted CVs are downloadable. External candidate uploads remain disabled.</p>
 <form method="POST" enctype="multipart/form-data" action="{{ route('admin.talent.documents.upload',$application->id) }}" class="grid gap-2 max-w-lg">@csrf
 <label>PDF CV <input type="file" name="cv" accept="application/pdf,.pdf" required></label>
-<button class="primary-button">Scan and save CV</button></form>
+<button class="primary-button" @disabled(!config('talent.cv_uploads_enabled', false))>Scan, extract and create review draft</button></form>
+@unless(config('talent.cv_uploads_enabled', false))<p class="text-sm" role="status">CV processing is temporarily disabled pending security acceptance tests.</p>@endunless
+<h3 class="font-semibold mt-4">Structured CV review</h3>
+@forelse($cvProfiles as $profile)
+<div class="rounded border border-gray-200 p-4 my-3 dark:border-gray-600">
+<p>CV #{{ $profile->id }} — <strong>{{ str_replace('_', ' ', $profile->status) }}</strong></p>
+@if($profile->status === 'review_required')
+<p class="text-sm">Verify every field against candidate-provided evidence. Extraction is only a draft; it may omit dates or misread columns. Blank fields are permitted except the candidate name.</p>
+@foreach($profile->review_flags ?? [] as $flag)<p class="text-sm">{{ $flag }}</p>@endforeach
+<form method="POST" action="{{ route('admin.talent.cv-profiles.approve',$profile->id) }}" class="grid gap-3 mt-3">
+@csrf
+@foreach(['full_name'=>'Full name','email'=>'Email','phone'=>'Phone','location'=>'Location','professional_summary'=>'Professional summary','employment'=>'Employment history','education'=>'Education','skills'=>'Skills','qualifications'=>'Qualifications and certifications','projects'=>'Projects','languages'=>'Languages'] as $field=>$label)
+<label class="grid gap-1">{{ $label }}
+@if(in_array($field,['full_name','email','phone','location']))
+<input class="rounded border p-2 text-black" name="{{ $field }}" maxlength="{{ $field==='full_name' ? 255 : 15000 }}" value="{{ old($field, $profile->fields[$field] ?? '') }}" @required($field==='full_name')>
+@else
+<textarea class="rounded border p-2 text-black" name="{{ $field }}" rows="4" maxlength="15000">{{ old($field, $profile->fields[$field] ?? '') }}</textarea>
+@endif
+</label>
+@endforeach
+<button class="primary-button" @disabled(!config('talent.cv_uploads_enabled', false))>Confirm verified fields and generate formatted CV</button>
+</form>
+@else
+<p class="text-sm">Reviewed and approved {{ $profile->approved_at }}</p>
+@endif
+</div>
+@empty<p>No extracted CV profiles yet.</p>@endforelse
+<h3 class="font-semibold mt-4">Approved recruiter-facing CVs</h3>
 <ul class="mt-3">@forelse($documents as $document)<li class="py-1">{{ $document->original_name }} — {{ $document->scan_status }}
-@if($document->scan_status==='clean')<a class="underline" href="{{ route('admin.talent.documents.download',$document->id) }}">Download securely</a>@endif
+@if($document->scan_status==='clean' && str_starts_with($document->storage_key,'talent-private/sanitized/'))<a class="underline" href="{{ route('admin.talent.documents.download',$document->id) }}">Download securely</a>@endif
 </li>@empty<li>No CV documents uploaded</li>@endforelse</ul>
 </section>
 <section class="rounded bg-white p-4 dark:bg-gray-900"><h2 class="text-lg font-semibold">Interviews</h2>
