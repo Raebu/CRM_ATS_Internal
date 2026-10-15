@@ -55,7 +55,7 @@ class DocumentUploadWorkflowTest extends TestCase
         $this->assertSame(0, Document::count());
         $profile = CvProfile::firstOrFail();
         $this->assertSame('review_required', $profile->status);
-        $this->assertSame('PHP and SQL', $profile->fields['skills']);
+        $this->assertSame('PHP and SQL', $profile->fields['technical_skills']);
         $this->assertSame([], Storage::disk('local')->allFiles('talent-private'));
     }
 
@@ -74,8 +74,8 @@ class DocumentUploadWorkflowTest extends TestCase
         $response = $this->post(route('admin.talent.cv-profiles.approve', $profile->id), [
             'first_name' => 'Verified',
             'last_name' => 'Candidate',
-            'skills' => 'PHP, SQL',
-            'employment' => 'Verified work history',
+            'technical_skills' => 'PHP, SQL',
+            'employment_entries' => [['company'=>'Example', 'title'=>'Developer','duties'=>'Verified work history']],
         ]);
         $response->assertRedirect();
         $this->assertSame('approved', $profile->fresh()->status);
