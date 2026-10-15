@@ -65,6 +65,10 @@ final class CvEvidenceReconciler
                     }
                     $record[$name]=$v;
                 }
+                if (trim(($record['company']??'').($record['title']??'').($record['qualification']??'').($record['institution']??''))==='') {
+                    $flags[]="Empty {$collection} entry ignored.";
+                    continue;
+                }
                 $records[]=$record;
                 $evidence[$collection][]=['page'=>$page,'excerpt'=>$quote,'confidence'=>'review_required'];
             }
