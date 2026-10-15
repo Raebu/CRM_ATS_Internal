@@ -74,6 +74,12 @@ class PdfSanitizer
             $script = <<<'SH'
 set -eu
 qpdf --check /work/input.pdf >/dev/null 2>&1
+# Reject PDFs with active actions or embedded attachments even before CDR.
+# qpdf JSON serialises PDF names as /Name strings.
+qpdf --json /work/input.pdf > /work/structure.json 2>/dev/null
+if grep -Eq '"/(JavaScript|JS|EmbeddedFiles|Launch|RichMedia|OpenAction|AA|XFA|AcroForm)"' /work/structure.json; then
+    exit 35
+fi
 qpdf --is-encrypted /work/input.pdf >/dev/null 2>&1 && exit 31
 pdfinfo /work/input.pdf > /work/info.txt
 pages=$(sed -n 's/^Pages:[[:space:]]*//p' /work/info.txt | head -n1)
