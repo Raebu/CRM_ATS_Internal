@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Talent;
 
-use App\Models\Talent\{Application,Candidate,CvProfile,Document,Job,Tenant};
+use App\Models\Talent\{Application,Candidate,CvProfile,Document,Job,PrivacyRequest,Tenant};
 use App\Services\Talent\ClamAvScanner;
 use App\Services\Talent\PdfSanitizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -212,6 +212,38 @@ class DocumentUploadWorkflowTest extends TestCase
             'candidate_id' => $application->candidate_id + 1000,
         ]);
         $this->get($url)->assertNotFound();
+    }
+
+    public function test_erasure_cannot_be_marked_fulfilled_without_verified_execution(): void
+    {
+        $application = $this->application();
+        $privacy = PrivacyRequest::create([
+            'tenant_id' => $application->tenant_id,
+            'candidate_id' => $application->candidate_id,
+            'request_type' => 'erasure',
+            'status' => 'in_review',
+            'created_by' => auth()->guard('user')->id(),
+            'verified_at' => now(),
+        ]);
+        $route = route('admin.talent.privacy.update', $privacy->id);
+        $methods = \Illuminate\Support\Facades\Route::getRoutes()
+            ->getByName('admin.talent.privacy.update')->methods();
+        $method = collect(['PATCH', 'PUT', 'POST'])->first(
+            fn ($candidate) => in_array($candidate, $methods, true)
+        );
+        $this->assertNotNull($method);
+        $this->from(route('admin.talent.privacy.index'))
+            ->call($method, $route, [
+                'status' => 'resolved',
+                'resolution_code' => 'fulfilled',
+                'resolution_notes' => 'No erasure executed',
+            ])->assertSessionHasErrors('status');
+
+        $privacy->refresh();
+        $this->assertSame('in_review', $privacy->status);
+        $this->assertNull($privacy->resolved_at);
+        $this->assertSame(0, \Illuminate\Support\Facades\DB::table('talent_privacy_status_history')
+            ->where('privacy_request_id', $privacy->id)->count());
     }
 
     public function test_uploads_disabled_by_default(): void
