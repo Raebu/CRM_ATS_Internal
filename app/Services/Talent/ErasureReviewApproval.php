@@ -38,6 +38,13 @@ final class ErasureReviewApproval
                 || trim((string) $review->backup_handling_notes) === '') {
                 $this->reject();
             }
+            $currentDigest = hash('sha256', json_encode(
+                app(CandidatePrivacyInventory::class)->inspect($tenantId, (int) $review->candidate_id),
+                JSON_THROW_ON_ERROR
+            ));
+            if (!hash_equals((string) $review->inventory_digest, $currentDigest)) {
+                $this->reject();
+            }
             $decisions = DB::table('talent_erasure_decisions')
                 ->where('tenant_id', $tenantId)->where('review_id', $reviewId)->get();
             if ($decisions->count() !== count(self::CATEGORIES)
