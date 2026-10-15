@@ -80,7 +80,83 @@ class CvProfileBuilder
         $structured['additional_information']=trim(implode("\n",array_filter([
             $fields['employment'],$fields['education'],$fields['projects'],$fields['additional_information']
         ])));
+
+        // Only split clearly labelled rows. Ambiguous histories remain in the
+        // original extracted text for human verification rather than guessing.
+        $structured['employment_entries'] = $this->employmentEntries($fields['employment']);
+        $structured['education_entries'] = $this->educationEntries($fields['education']);
+        if ($fields['employment'] !== '' && $structured['employment_entries'] === []) {
+            $flags[] = 'Employment entries require manual separation.';
+        }
+        if ($fields['education'] !== '' && $structured['education_entries'] === []) {
+            $flags[] = 'Education entries require manual separation.';
+        }
         return [$structured,$flags];
+    }
+
+
+    /**
+     * Conservative parsing of unambiguous "Role - Organisation" rows.
+     * Preserve the full source section in additional_information for review.
+     */
+    private function employmentEntries(string $section): array
+    {
+        $entries = [];
+        $current = null;
+        foreach (preg_split('/\R/u', $section) ?: [] as $line) {
+            $line = trim($line);
+            if ($line === '') continue;
+            if (preg_match('/^(.{2,120}?)\s+[-–—]\s+(.{2,120})$/u', $line, $match)) {
+                if ($current !== null) $entries[] = $current;
+                $current = ['title' => trim($match[1]), 'company' => trim($match[2])];
+                continue;
+            }
+            if ($current === null) continue;
+            if (preg_match('/^([A-Za-z]+)\s+(\d{4})\s+[-–—]\s+(Present|Current|([A-Za-z]+)\s+(\d{4}))$/iu', $line, $match)) {
+                $start = $this->month($match[1], $match[2]);
+                $end = strtolower($match[3]) === 'present' || strtolower($match[3]) === 'current'
+                    ? null : $this->month($match[4] ?? '', $match[5] ?? '');
+                if ($start !== null) $current['start'] = $start;
+                if (strtolower($match[3]) === 'present' || strtolower($match[3]) === 'current') {
+                    $current['present'] = 'yes';
+                } elseif ($end !== null) {
+                    $current['end'] = $end;
+                }
+            } else {
+                $current['duties'] = trim(($current['duties'] ?? '')."\n".$line);
+            }
+        }
+        if ($current !== null) $entries[] = $current;
+        return array_slice($entries, 0, 100);
+    }
+
+    private function educationEntries(string $section): array
+    {
+        $entries = [];
+        $current = null;
+        foreach (preg_split('/\R/u', $section) ?: [] as $line) {
+            $line = trim($line);
+            if ($line === '') continue;
+            if (preg_match('/^(.{2,150}?)\s+[-–—]\s+(.{2,150})$/u', $line, $match)) {
+                if ($current !== null) $entries[] = $current;
+                $current = ['qualification' => trim($match[1]), 'institution' => trim($match[2])];
+            } elseif ($current !== null && preg_match('/^(19|20)\d{2}$/', $line)) {
+                // Year-only precision must not be represented as a fabricated month.
+                $current['coursework'] = trim(($current['coursework'] ?? '')."\nGraduation year: ".$line);
+            } elseif ($current !== null) {
+                $current['coursework'] = trim(($current['coursework'] ?? '')."\n".$line);
+            }
+        }
+        if ($current !== null) $entries[] = $current;
+        return array_slice($entries, 0, 100);
+    }
+
+    private function month(string $name, string $year): ?string
+    {
+        $months = ['january'=>1,'february'=>2,'march'=>3,'april'=>4,'may'=>5,'june'=>6,
+            'july'=>7,'august'=>8,'september'=>9,'october'=>10,'november'=>11,'december'=>12];
+        $number = $months[strtolower($name)] ?? null;
+        return $number === null ? null : sprintf('%04d-%02d', (int) $year, $number);
     }
 
     /** The PDF contains only HTML-escaped approved structured fields. No source PDF bytes. */
