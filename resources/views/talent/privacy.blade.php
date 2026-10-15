@@ -9,6 +9,7 @@
 <table class="w-full text-left dark:text-white"><thead><tr><th>Candidate</th><th>Type</th><th>Status</th><th>Recorded</th><th>Review deadline</th><th>Action</th></tr></thead><tbody>
 @forelse($requests as $entry)
 <tr class="border-t"><td class="p-2">{{ $entry->candidate?->name }}</td><td class="p-2">{{ $entry->request_type }}</td><td class="p-2">{{ $entry->status }}</td><td class="p-2">{{ $entry->created_at }}</td><td class="p-2">{{ $entry->due_at?->format('Y-m-d') ?? 'Review required' }}</td><td class="p-2">
+@if($entry->request_type === 'erasure')<a class="underline" href="{{ route('admin.talent.erasure.show',$entry->id) }}">Erasure review</a>@endif
 <form method="POST" action="{{ route('admin.talent.privacy.update',$entry->id) }}">@csrf @method('PATCH')
 <select name="status" aria-label="Change privacy request status">
 @foreach(['identity_verified','in_review','resolved','declined'] as $status)<option value="{{ $status }}">{{ str_replace('_',' ',$status) }}</option>@endforeach
