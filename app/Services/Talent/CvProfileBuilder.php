@@ -69,7 +69,18 @@ class CvProfileBuilder
             }
         }
         $flags[] = 'All extracted details require human verification against candidate-provided information.';
-        return [array_merge(CvFieldSchema::defaults(), $fields), $flags];
+        $structured=CvFieldSchema::defaults();
+        $name=explode(' ',trim($fields['full_name']),2);
+        $structured['first_name']=$name[0]??'';
+        $structured['last_name']=$name[1]??'';
+        foreach(['email','phone','location','languages'] as $key) $structured[$key]=$fields[$key];
+        $structured['career_objective']=$fields['professional_summary'];
+        $structured['technical_skills']=$fields['skills'];
+        $structured['industry_certifications']=$fields['qualifications'];
+        $structured['additional_information']=trim(implode("\n",array_filter([
+            $fields['employment'],$fields['education'],$fields['projects'],$fields['additional_information']
+        ])));
+        return [$structured,$flags];
     }
 
     /** The PDF contains only HTML-escaped approved structured fields. No source PDF bytes. */
