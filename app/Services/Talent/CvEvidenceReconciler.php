@@ -43,6 +43,33 @@ final class CvEvidenceReconciler
             $fields[$key] = $value;
             $evidence[$key][] = ['page'=>$page,'excerpt'=>$quote,'confidence'=>'review_required'];
         }
+        foreach (CvFieldSchema::REPEATABLE as $collection => $definition) {
+            $records = [];
+            foreach ($proposals as $proposal) {
+                if (!is_array($proposal) || ($proposal['field']??'')!==$collection) continue;
+                $entry = $proposal['value'] ?? null;
+                $quote = $proposal['source_excerpt'] ?? '';
+                $page = $proposal['page'] ?? null;
+                if (!is_array($entry) || !is_string($quote) || $quote==='' ||
+                    !str_contains($sourceText,$quote) || !is_int($page) || $page<1 || $page>100 ||
+                    count($records)>=100) {
+                    $flags[]="Invalid or unsupported {$collection} proposal.";
+                    continue;
+                }
+                $record=[];
+                foreach ($definition['fields'] as $name=>$label) {
+                    $v=$entry[$name]??'';
+                    if (!is_string($v) || strlen($v)>15000) {
+                        $flags[]="Invalid {$collection}.{$name}; requires review.";
+                        $v='';
+                    }
+                    $record[$name]=$v;
+                }
+                $records[]=$record;
+                $evidence[$collection][]=['page'=>$page,'excerpt'=>$quote,'confidence'=>'review_required'];
+            }
+            $fields[$collection]=$records;
+        }
         $flags[] = 'AI suggestions are unverified; compare all fields, dates and record associations with the source.';
         return ['fields'=>$fields,'evidence'=>$evidence,'review_flags'=>$flags,'status'=>'review_required'];
     }
