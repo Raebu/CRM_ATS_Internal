@@ -117,14 +117,32 @@ class DocumentController extends Controller
             && $application->candidate?->tenant_id === $tenant->id, 404);
 
         $rules = [];
-        foreach (CvProfileBuilder::KEYS as $field) {
-            $rules[$field] = ['nullable', 'string', 'max:15000'];
+        foreach (\App\Services\Talent\CvFieldSchema::GROUPS as $group) {
+            foreach ($group as $field=>$label) {
+                $rules[$field] = ['nullable','string','max:15000'];
+            }
         }
-        $rules['full_name'] = ['required', 'string', 'max:255'];
-        $rules['email'] = ['nullable', 'email', 'max:255'];
-        $fields = $request->validate($rules);
-        foreach (CvProfileBuilder::KEYS as $field) {
-            $fields[$field] = (string) ($fields[$field] ?? '');
+        $rules['first_name']=['required','string','max:255'];
+        $rules['last_name']=['nullable','string','max:255'];
+        $rules['email']=['nullable','email','max:255'];
+        foreach (['linkedin_url','portfolio_url'] as $field) {
+            $rules[$field]=['nullable','url','max:2048'];
+        }
+        foreach (\App\Services\Talent\CvFieldSchema::SETTINGS as $field=>$label) {
+            $rules[$field]=['nullable','string','max:255'];
+        }
+        foreach (\App\Services\Talent\CvFieldSchema::REPEATABLE as $collection=>$group) {
+            $rules[$collection]=['sometimes','array','max:100'];
+            foreach ($group['fields'] as $field=>$label) {
+                $rules[$collection.'.*.'.$field]=['nullable','string','max:15000'];
+            }
+            foreach (['present','expected'] as $boolean) {
+                if(isset($group['fields'][$boolean])) $rules[$collection.'.*.'.$boolean]=['nullable','in:yes,no'];
+            }
+        }
+        $fields=array_replace(\App\Services\Talent\CvFieldSchema::defaults(),$request->validate($rules));
+        foreach (['employment_entries','education_entries'] as $collection) {
+            $fields[$collection]=array_values($fields[$collection]??[]);
         }
         $key = 'talent-private/sanitized/'.$tenant->id.'/'.(string) Str::uuid().'.pdf';
         $disk = Storage::disk('local');
