@@ -69,7 +69,7 @@ class CvProfileBuilder
             }
         }
         $flags[] = 'All extracted details require human verification against candidate-provided information.';
-        return [$fields, $flags];
+        return [array_merge(CvFieldSchema::defaults(), $fields), $flags];
     }
 
     /** The PDF contains only HTML-escaped approved structured fields. No source PDF bytes. */
