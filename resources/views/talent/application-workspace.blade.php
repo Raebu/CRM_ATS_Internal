@@ -29,15 +29,7 @@
 @foreach($profile->review_flags ?? [] as $flag)<p class="text-sm">{{ $flag }}</p>@endforeach
 <form method="POST" action="{{ route('admin.talent.cv-profiles.approve',$profile->id) }}" class="grid gap-3 mt-3">
 @csrf
-@foreach(['full_name'=>'Full name','email'=>'Email','phone'=>'Phone','location'=>'Location','professional_summary'=>'Professional summary','employment'=>'Employment history','education'=>'Education','skills'=>'Skills','qualifications'=>'Qualifications and certifications','projects'=>'Projects','languages'=>'Languages','additional_information'=>'Other extracted information (verify or remove)'] as $field=>$label)
-<label class="grid gap-1">{{ $label }}
-@if(in_array($field,['full_name','email','phone','location']))
-<input class="rounded border p-2 text-black" name="{{ $field }}" maxlength="{{ $field==='full_name' ? 255 : 15000 }}" value="{{ old($field, $profile->fields[$field] ?? '') }}" @required($field==='full_name')>
-@else
-<textarea class="rounded border p-2 text-black" name="{{ $field }}" rows="4" maxlength="15000">{{ old($field, $profile->fields[$field] ?? '') }}</textarea>
-@endif
-</label>
-@endforeach
+@include('talent.partials.cv-review-fields')
 <button class="primary-button" @disabled(!config('talent.cv_uploads_enabled', false))>Confirm verified fields and generate formatted CV</button>
 </form>
 @else
