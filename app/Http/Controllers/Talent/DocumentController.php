@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Talent;
 
 use App\Http\Controllers\Controller;
-use App\Models\Talent\{Application, Document, DomainEvent, Tenant};
+use App\Models\Talent\{Application, CvProfile, Document, DomainEvent, Tenant};
 use App\Services\Talent\ClamAvScanner;
 use App\Services\Talent\PdfSanitizer;
+use App\Services\Talent\CvProfileBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -15,7 +16,7 @@ use Illuminate\Support\Str;
 
 class DocumentController extends Controller
 {
-    public function upload(Request $request, int $id, ClamAvScanner $scanner, PdfSanitizer $sanitizer)
+    public function upload(Request $request, int $id, ClamAvScanner $scanner, PdfSanitizer $sanitizer, CvProfileBuilder $builder)
     {
         abort_unless(config('talent.cv_uploads_enabled', false), 503, 'CV uploads are temporarily disabled pending malware-scanning verification.');
         $tenant = Tenant::where('slug', 'raeburn-group')->firstOrFail();
@@ -60,11 +61,12 @@ class DocumentController extends Controller
         // Fail closed: quarantine, scan original, reconstruct in isolation,
         // scan reconstructed content, then and only then publish metadata.
         $approved = false;
+        $extractedText = '';
         try {
             if ($scanner->scan($quarantineKey) !== 'clean') {
                 throw new \RuntimeException('Original PDF failed malware scanning.');
             }
-            $sanitizer->sanitize($quarantineKey, $key);
+            $extractedText = $sanitizer->sanitize($quarantineKey, $key);
             if ($scanner->scan($key) !== 'clean') {
                 throw new \RuntimeException('Reconstructed PDF failed malware scanning.');
             }
@@ -81,38 +83,105 @@ class DocumentController extends Controller
             }
         }
 
+        // The rasterised intermediate is a processing artifact, not a recruiter CV.
+        $disk->delete($key);
+        [$fields, $flags] = $builder->extract(
+            $extractedText,
+            $application->candidate->name,
+            $application->candidate->email
+        );
+        unset($extractedText);
+
+        CvProfile::create([
+            'tenant_id' => $tenant->id,
+            'candidate_id' => $application->candidate_id,
+            'application_id' => $application->id,
+            'status' => 'review_required',
+            'fields' => $fields,
+            'review_flags' => $flags,
+        ]);
+
+        return back()->with('success', 'Original destroyed after secure extraction. Review and approve the structured CV before it can be downloaded.');
+    }
+
+    public function approve(Request $request, int $id, ClamAvScanner $scanner, CvProfileBuilder $builder)
+    {
+        abort_unless(config('talent.cv_uploads_enabled', false), 503);
+        $tenant = Tenant::where('slug', 'raeburn-group')->firstOrFail();
+        $profile = CvProfile::where('tenant_id', $tenant->id)->findOrFail($id);
+        abort_unless($profile->status === 'review_required', 409);
+        $application = Application::with('candidate')
+            ->where('tenant_id', $tenant->id)
+            ->findOrFail($profile->application_id);
+        abort_unless($application->candidate_id === $profile->candidate_id
+            && $application->candidate?->tenant_id === $tenant->id, 404);
+
+        $rules = [];
+        foreach (CvProfileBuilder::KEYS as $field) {
+            $rules[$field] = ['nullable', 'string', 'max:15000'];
+        }
+        $rules['full_name'] = ['required', 'string', 'max:255'];
+        $rules['email'] = ['nullable', 'email', 'max:255'];
+        $fields = $request->validate($rules);
+        foreach (CvProfileBuilder::KEYS as $field) {
+            $fields[$field] = (string) ($fields[$field] ?? '');
+        }
+        $key = 'talent-private/sanitized/'.$tenant->id.'/'.(string) Str::uuid().'.pdf';
+        $disk = Storage::disk('local');
         try {
-            DB::transaction(function () use ($tenant, $application, $file, $key) {
+            $pdf = $builder->render($fields);
+            if (!$disk->put($key, $pdf)) {
+                throw new \RuntimeException('Cannot save structured CV.');
+            }
+            unset($pdf);
+            if ($scanner->scan($key) !== 'clean') {
+                throw new \RuntimeException('Generated CV did not pass security scan.');
+            }
+            DB::transaction(function () use ($tenant, $application, $profile, $fields, $disk, $key) {
+                // Race-safe status transition: only the first approval publishes.
+                $updated = CvProfile::where('id', $profile->id)
+                    ->where('tenant_id', $tenant->id)
+                    ->where('status', 'review_required')
+                    ->update([
+                        'status' => 'approved',
+                        'fields' => json_encode($fields, JSON_THROW_ON_ERROR),
+                        'review_flags' => json_encode([], JSON_THROW_ON_ERROR),
+                        'approved_by' => auth()->guard('user')->id(),
+                        'approved_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                if ($updated !== 1) {
+                    throw new \RuntimeException('CV has already been approved.');
+                }
                 $document = Document::create([
                     'tenant_id' => $tenant->id,
                     'candidate_id' => $application->candidate_id,
                     'application_id' => $application->id,
                     'disk' => 'local',
                     'storage_key' => $key,
-                    'original_name' => basename($file->getClientOriginalName()),
+                    'original_name' => 'Raeburn-formatted-CV.pdf',
                     'mime_type' => 'application/pdf',
                     'size_bytes' => $disk->size($key),
                     'scan_status' => 'clean',
                 ]);
+                CvProfile::where('id', $profile->id)->update(['source_document_id' => $document->id]);
                 DomainEvent::create([
                     'tenant_id' => $tenant->id,
                     'event_id' => (string) Str::uuid(),
-                    'event_type' => 'document.uploaded.v1',
+                    'event_type' => 'cv.approved.v1',
                     'event_version' => 1,
                     'aggregate_type' => 'document',
                     'aggregate_id' => $document->id,
-                    'payload' => [
-                        'actor_id' => auth()->guard('user')->id(),
-                        'application_id' => $application->id,
-                    ],
+                    'payload' => ['actor_id' => auth()->guard('user')->id(), 'application_id' => $application->id],
                 ]);
             });
         } catch (Throwable $e) {
             $disk->delete($key);
-            throw $e;
+            report($e);
+            throw ValidationException::withMessages(['cv' => 'CV generation or security approval failed. Please retry.']);
         }
-
-        return back()->with('success', 'PDF CV scanned and saved privately.');
+        return redirect()->route('admin.talent.applications.show', $application->id)
+            ->with('success', 'Verified structured CV generated, rescanned and saved.');
     }
 
     public function download(int $id)
