@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Talent;
 
-use App\Models\Talent\{Application,Candidate,Document,Job,Tenant};
+use App\Models\Talent\{Application,Candidate,CvProfile,Document,Job,Tenant};
 use App\Services\Talent\ClamAvScanner;
 use App\Services\Talent\PdfSanitizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -39,20 +39,49 @@ class DocumentUploadWorkflowTest extends TestCase
         return UploadedFile::fake()->createWithContent('synthetic-cv.pdf', "%PDF-1.4\n1 0 obj\n<<>>\nendobj\n%%EOF\n");
     }
 
-    public function test_clean_pdf_is_kept_private_and_downloadable(): void
+    public function test_upload_creates_review_draft_and_destroys_source(): void
     {
         Storage::fake('local');
-        $application=$this->application();
+        $application = $this->application();
         $this->mock(ClamAvScanner::class)->shouldReceive('scan')->twice()->andReturn('clean');
         $this->mock(PdfSanitizer::class)->shouldReceive('sanitize')->once()->andReturnUsing(
-            fn ($src, $dst) => Storage::disk('local')->put($dst, "%PDF-1.4\n% reconstructed\n%%EOF\n")
+            function ($src, $dst) {
+                Storage::disk('local')->put($dst, "%PDF-1.4\n% reconstructed\n%%EOF\n");
+                return "PROFILE\nExperienced analyst\nSKILLS\nPHP and SQL";
+            }
         );
-        $this->post(route('admin.talent.documents.upload',$application->id),['cv'=>$this->pdf()])->assertRedirect();
-        $document=Document::firstOrFail();
-        $this->assertSame('clean',$document->scan_status);
-        $this->assertStringStartsWith('talent-private/sanitized/',$document->storage_key);
+        $this->post(route('admin.talent.documents.upload', $application->id), ['cv' => $this->pdf()])
+            ->assertRedirect();
+        $this->assertSame(0, Document::count());
+        $profile = CvProfile::firstOrFail();
+        $this->assertSame('review_required', $profile->status);
+        $this->assertSame('PHP and SQL', $profile->fields['skills']);
+        $this->assertSame([], Storage::disk('local')->allFiles('talent-private'));
+    }
+
+    public function test_verified_form_creates_recruiter_pdf_only_after_approval(): void
+    {
+        Storage::fake('local');
+        $application = $this->application();
+        $profile = CvProfile::create([
+            'tenant_id' => $application->tenant_id,
+            'application_id' => $application->id,
+            'candidate_id' => $application->candidate_id,
+            'status' => 'review_required',
+            'fields' => ['full_name' => 'Draft Candidate'],
+        ]);
+        $this->mock(ClamAvScanner::class)->shouldReceive('scan')->once()->andReturn('clean');
+        $response = $this->post(route('admin.talent.cv-profiles.approve', $profile->id), [
+            'full_name' => 'Verified Candidate',
+            'skills' => 'PHP, SQL',
+            'employment' => 'Verified work history',
+        ]);
+        $response->assertRedirect();
+        $this->assertSame('approved', $profile->fresh()->status);
+        $document = Document::firstOrFail();
+        $this->assertStringStartsWith('talent-private/sanitized/', $document->storage_key);
         Storage::disk('local')->assertExists($document->storage_key);
-        $this->get(route('admin.talent.documents.download',$document->id))->assertOk();
+        $this->get(route('admin.talent.documents.download', $document->id))->assertOk();
     }
 
     public function test_detected_malware_is_rejected_and_not_retained(): void
@@ -99,7 +128,7 @@ class DocumentUploadWorkflowTest extends TestCase
         $application = $this->application();
         $this->mock(ClamAvScanner::class)->shouldReceive('scan')->twice()->andReturn('clean', 'infected');
         $this->mock(PdfSanitizer::class)->shouldReceive('sanitize')->once()->andReturnUsing(
-            fn ($src, $dst) => Storage::disk('local')->put($dst, "%PDF-1.4\\n%%EOF\\n")
+            function ($src, $dst) { Storage::disk('local')->put($dst, "%PDF-1.4\\n%%EOF\\n"); return 'SKILLS'; }
         );
         $this->post(route('admin.talent.documents.upload', $application->id), ['cv' => $this->pdf()])
             ->assertSessionHasErrors('cv');
