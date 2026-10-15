@@ -45,6 +45,7 @@ final class CvEvidenceReconciler
         }
         foreach (CvFieldSchema::REPEATABLE as $collection => $definition) {
             $records = [];
+            $seen = [];
             foreach ($proposals as $proposal) {
                 if (!is_array($proposal) || ($proposal['field']??'')!==$collection) continue;
                 $entry = $proposal['value'] ?? null;
@@ -69,6 +70,12 @@ final class CvEvidenceReconciler
                     $flags[]="Empty {$collection} entry ignored.";
                     continue;
                 }
+                $identity = implode('|', array_map(fn($v)=>mb_strtolower(trim((string)$v)), [$record['company']??$record['institution']??'', $record['title']??$record['qualification']??'', $record['start']??$record['graduation']??'']));
+                if (isset($seen[$identity])) {
+                    $flags[]="Duplicate {$collection} entry requires review.";
+                    continue;
+                }
+                $seen[$identity]=true;
                 $records[]=$record;
                 $evidence[$collection][]=['page'=>$page,'excerpt'=>$quote,'confidence'=>'review_required'];
             }
