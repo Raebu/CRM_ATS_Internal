@@ -67,6 +67,15 @@ final class ErasureReviewApprovalTest extends TestCase
         $this->assertSame(18,(int)DB::table('talent_erasure_reviews')->where('id',$id)->value('approved_by'));
         $this->assertTrue(Candidate::whereKey($candidate->id)->exists());
         $this->assertSame('in_review',$request->fresh()->status);
+        $event=DB::table('talent_events')
+            ->where('tenant_id',$tenant->id)
+            ->where('event_type','privacy.erasure_review_approved.v1')
+            ->where('aggregate_id',$id)->first();
+        $this->assertNotNull($event);
+        $audit=json_decode($event->payload,true,512,JSON_THROW_ON_ERROR);
+        $this->assertSame(false,$audit['deletion_performed']);
+        $this->assertSame(18,$audit['approved_by']);
+
     }
 
     public function test_candidate_record_change_invalidates_approval_even_without_count_change(): void
