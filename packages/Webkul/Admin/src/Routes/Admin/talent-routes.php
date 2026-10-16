@@ -64,4 +64,5 @@ Route::middleware(\App\Http\Middleware\TalentAuthorization::class)->prefix('tale
  Route::post('/{id}/erasure-review','prepare')->name('prepare');
  Route::patch('/{id}/erasure-review','save')->name('save');
  Route::post('/{id}/erasure-review/approve','approve')->name('approve');
+ Route::post('/{id}/erasure-review/refresh','refresh')->name('refresh');
 });
