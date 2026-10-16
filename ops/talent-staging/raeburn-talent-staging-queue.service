@@ -1,0 +1,28 @@
+# Template only. Review and install as root at:
+# /etc/systemd/system/raeburn-talent-staging-queue.service
+# Never point this service at production DB, Redis or queues.
+[Unit]
+Description=Raeburn Talent staging Laravel database queue
+After=network-online.target mysql.service php8.3-fpm.service
+Wants=network-online.target
+ConditionPathExists=/var/www/raeburn-talent-staging/artisan
+[Service]
+Type=simple
+User=raeburnstaging
+Group=raeburnstaging
+WorkingDirectory=/var/www/raeburn-talent-staging
+ExecStart=/usr/bin/php artisan queue:work database --queue=default --sleep=3 --tries=3 --timeout=90 --max-time=3600 --no-interaction
+Restart=always
+RestartSec=10
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/var/www/raeburn-talent-staging/storage /var/www/raeburn-talent-staging/bootstrap/cache
+ProtectHome=true
+RestrictSUIDSGID=true
+CapabilityBoundingSet=
+MemoryMax=512M
+TasksMax=64
+[Install]
+WantedBy=multi-user.target

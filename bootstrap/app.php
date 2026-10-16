@@ -15,6 +15,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Cloudflare Tunnel terminates HTTPS before forwarding to local Nginx.
+        // Trust only the loopback proxy and only its forwarded scheme header;
+        // do not trust arbitrary internet clients to set proxy headers.
+        $middleware->trustProxies(
+            at: ['127.0.0.1', '::1'],
+            headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO
+        );
+
         $middleware->append(CanInstall::class);
 
         $middleware->encryptCookies(except: [

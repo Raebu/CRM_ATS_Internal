@@ -1,0 +1,95 @@
+name: Native Talent PHP checks
+on:
+  pull_request:
+    paths:
+      - 'app/Http/Controllers/Talent/**'
+      - 'app/Models/Talent/**'
+      - 'app/Services/Talent/**'
+      - 'app/Jobs/Talent/**'
+      - 'app/Console/Commands/TalentProductionPreflight.php'
+      - 'app/Console/Commands/DispatchTalentOutbox.php'
+      - 'app/Console/Commands/CreateTalentInterviewReminders.php'
+      - 'database/migrations/2026_10_12_12*.php'
+      - 'tests/**/Talent/**'
+      - '.github/workflows/talent-php-checks.yml'
+  workflow_dispatch:
+jobs:
+  syntax:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+          coverage: none
+      - name: Lint all native Talent PHP files
+        shell: bash
+        run: |
+          set -euo pipefail
+          find app/Http/Controllers/Talent app/Models/Talent app/Services/Talent app/Jobs/Talent app/Console/Commands/DispatchTalentOutbox.php app/Console/Commands/CreateTalentInterviewReminders.php tests/Feature/Talent tests/Unit/Talent -type f -name '*.php' -print0 |
+            xargs -0 -n1 php -l
+          for file in database/migrations/2026_10_12_12*.php; do php -l "$file"; done
+  transitions:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+          coverage: none
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress --no-scripts
+      - name: Set up test app environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+      - name: Run policy unit tests
+        run: vendor/bin/pest tests/Unit/Talent/RecruitmentTransitionsTest.php tests/Unit/Talent/TalentAuthorizationTest.php tests/Unit/Talent/ClamAvScannerTest.php tests/Unit/Talent/EmailTemplateCatalogTest.php tests/Unit/Talent/VacancyTransitionsTest.php tests/Unit/Talent/RecruitmentEmailSenderTest.php tests/Unit/Talent/InterviewCalendarInviteTest.php tests/Unit/Talent/ProductionReadinessTest.php
+
+  mysql-integration:
+    runs-on: ubuntu-24.04
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: testroot
+          MYSQL_DATABASE: talent_tests
+          MYSQL_USER: talent_test
+          MYSQL_PASSWORD: testpassword
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -ptestroot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, bcmath, intl, gd, zip, soap
+          tools: composer
+          coverage: none
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress --no-scripts
+      - name: Prepare isolated test environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+      - name: Run recruitment database integration tests
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: '3306'
+          DB_DATABASE: talent_tests
+          DB_USERNAME: talent_test
+          DB_PASSWORD: testpassword
+          CACHE_STORE: array
+          SESSION_DRIVER: array
+          QUEUE_CONNECTION: sync
+        run: vendor/bin/pest tests/Feature/Talent --stop-on-failure

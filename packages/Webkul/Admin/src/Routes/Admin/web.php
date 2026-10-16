@@ -54,3 +54,6 @@ require 'help-routes.php';
  * Rest routes.
  */
 require 'rest-routes.php';
+
+/** Raeburn Talent native recruitment routes. */
+require 'talent-routes.php';
