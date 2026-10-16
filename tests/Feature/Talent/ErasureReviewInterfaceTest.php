@@ -25,6 +25,23 @@ final class ErasureReviewInterfaceTest extends TestCase
   $review=DB::table('talent_erasure_reviews')->where('privacy_request_id',$request->id)->first();
   $this->assertNotNull($review);
   $this->assertSame(14,DB::table('talent_erasure_decisions')->where('review_id',$review->id)->count());
+
+  DB::table('talent_erasure_decisions')->where('review_id',$review->id)
+      ->where('data_category','candidate_identity')->update([
+          'proposed_action'=>'retain','rationale'=>'Synthetic pre-refresh rationale',
+          'legal_basis'=>'Synthetic','reviewed_by'=>$user->id,'reviewed_at'=>now(),
+      ]);
+  DB::table('talent_candidates')->where('id',$candidate->id)->update(['name'=>'Changed Candidate']);
+  $this->post(route('admin.talent.erasure.refresh',$request->id))->assertRedirect();
+  $this->assertSame('review_required',DB::table('talent_erasure_decisions')
+      ->where('review_id',$review->id)->where('data_category','candidate_identity')
+      ->value('proposed_action'));
+  $this->assertNull(DB::table('talent_erasure_decisions')
+      ->where('review_id',$review->id)->where('data_category','candidate_identity')
+      ->value('rationale'));
+  $this->assertSame(1,DB::table('talent_events')
+      ->where('event_type','privacy.erasure_review_refreshed.v1')->count());
+
   $this->from(route('admin.talent.erasure.show',$request->id))
    ->post(route('admin.talent.erasure.approve',$request->id))->assertSessionHasErrors('erasure_review');
   $this->assertSame('draft',DB::table('talent_erasure_reviews')->where('id',$review->id)->value('status'));
