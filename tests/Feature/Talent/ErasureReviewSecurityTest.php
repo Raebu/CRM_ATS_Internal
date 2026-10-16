@@ -58,4 +58,29 @@ final class ErasureReviewSecurityTest extends TestCase
         $this->assertNotSame($first,$second);
         $this->assertSame(1,DB::table('talent_documents')->count());
     }
+
+    public function test_erasure_routes_do_not_access_another_tenants_privacy_request(): void
+    {
+        $this->withoutMiddleware(CanInstall::class);
+        $role=Role::create(['name'=>'Synthetic Privacy Manager','permission_type'=>'all','permissions'=>[]]);
+        $user=User::create([
+            'name'=>'Synthetic Manager','email'=>'tenant-'.uniqid().'@example.invalid',
+            'password'=>bcrypt('synthetic-only'),'status'=>1,'role_id'=>$role->id,
+        ]);
+        $other=Tenant::create(['slug'=>'unrelated-tenant','name'=>'Unrelated Tenant']);
+        Tenant::firstOrCreate(['slug'=>'raeburn-group'],['name'=>'The Raeburn Group']);
+        $candidate=Candidate::create(['tenant_id'=>$other->id,'name'=>'Other Candidate','email'=>'other-tenant@example.invalid']);
+        $request=PrivacyRequest::create([
+            'tenant_id'=>$other->id,'candidate_id'=>$candidate->id,
+            'request_type'=>'erasure','status'=>'in_review','created_by'=>$user->id,
+            'verified_at'=>now(),'identity_evidence_reviewed_at'=>now(),
+        ]);
+        $this->actingAs($user,'user');
+        $this->get(route('admin.talent.erasure.show',$request->id))->assertNotFound();
+        $this->post(route('admin.talent.erasure.prepare',$request->id))->assertNotFound();
+        $this->post(route('admin.talent.erasure.approve',$request->id))->assertNotFound();
+        $this->assertSame(0,DB::table('talent_erasure_reviews')->count());
+        $this->assertTrue(Candidate::whereKey($candidate->id)->exists());
+    }
+
 }
