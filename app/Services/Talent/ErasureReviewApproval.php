@@ -58,6 +58,25 @@ final class ErasureReviewApproval
                     $this->reject();
                 }
             }
+            // Audit only pseudonymous IDs and the digest, never candidate personal data.
+            DB::table('talent_events')->insert([
+                'tenant_id'=>$tenantId,
+                'event_id'=>(string)\Illuminate\Support\Str::uuid(),
+                'event_type'=>'privacy.erasure_review_approved.v1',
+                'event_version'=>1,
+                'aggregate_type'=>'erasure_review',
+                'aggregate_id'=>$reviewId,
+                'payload'=>json_encode([
+                    'review_id'=>$reviewId,
+                    'privacy_request_id'=>$review->privacy_request_id,
+                    'prepared_by'=>$review->prepared_by,
+                    'approved_by'=>$actorId,
+                    'fingerprint_version'=>CandidateErasureFingerprint::VERSION,
+                    'inventory_digest'=>$review->inventory_digest,
+                    'deletion_performed'=>false,
+                ],JSON_THROW_ON_ERROR),
+                'created_at'=>now(),'updated_at'=>now(),
+            ]);
             DB::table('talent_erasure_reviews')->where('id', $reviewId)
                 ->where('tenant_id', $tenantId)
                 ->update(['status'=>'review_approved','approved_by'=>$actorId,
