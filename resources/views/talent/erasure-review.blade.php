@@ -19,6 +19,10 @@
 </form>
 @else
 @if($review->status === 'draft')
+<form method="POST" action="{{ route('admin.talent.erasure.refresh',$privacyRequest->id) }}">@csrf
+<p>Refreshing invalidates all existing category decisions and retention notes; re-review is mandatory.</p>
+<button type="submit" class="primary-button">Refresh changed inventory (resets review)</button>
+</form>
 <form class="grid gap-4" method="POST" action="{{ route('admin.talent.erasure.save',$privacyRequest->id) }}">
 @csrf @method('PATCH')
 <label>Legal holds and retention analysis
