@@ -3,7 +3,7 @@ namespace App\Http\Controllers\Talent;
 
 use App\Http\Controllers\Controller;
 use App\Models\Talent\{PrivacyRequest,Tenant};
-use App\Services\Talent\{CandidatePrivacyInventory,ErasureReviewApproval};
+use App\Services\Talent\{CandidateErasureFingerprint,ErasureReviewApproval};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
