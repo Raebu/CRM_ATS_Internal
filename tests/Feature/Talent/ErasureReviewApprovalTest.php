@@ -68,4 +68,36 @@ final class ErasureReviewApprovalTest extends TestCase
         $this->assertTrue(Candidate::whereKey($candidate->id)->exists());
         $this->assertSame('in_review',$request->fresh()->status);
     }
+
+    public function test_candidate_record_change_invalidates_approval_even_without_count_change(): void
+    {
+        [$tenant,$candidate,$request,$id] = $this->prepare();
+        foreach (ErasureReviewApproval::CATEGORIES as $category) {
+            DB::table('talent_erasure_decisions')->insert([
+                'tenant_id'=>$tenant->id,'review_id'=>$id,'data_category'=>$category,
+                'proposed_action'=>'retain','legal_basis'=>'Synthetic test only',
+                'rationale'=>'Synthetic review decision','reviewed_by'=>17,
+                'reviewed_at'=>now(),'created_at'=>now(),'updated_at'=>now(),
+            ]);
+        }
+        // Direct update deliberately does not change updated_at or row counts.
+        DB::table('talent_candidates')->where('id',$candidate->id)->update(['name'=>'Changed after preparation']);
+        try {
+            app(ErasureReviewApproval::class)->approve($tenant->id,$id,18);
+            $this->fail('Stale review incorrectly approved');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('erasure_review',$exception->errors());
+        }
+        $this->assertSame('draft',DB::table('talent_erasure_reviews')->where('id',$id)->value('status'));
+        $this->assertTrue(Candidate::whereKey($candidate->id)->exists());
+    }
+
+    public function test_fingerprint_rejects_cross_tenant_candidate_lookup(): void
+    {
+        [$tenant,$candidate] = $this->prepare();
+        $other = Tenant::create(['name'=>'Other Tenant','slug'=>'other-tenant']);
+        $this->expectException(\\Symfony\\Component\\HttpKernel\\Exception\\NotFoundHttpException::class);
+        app(\\App\\Services\\Talent\\CandidateErasureFingerprint::class)->digest($other->id,$candidate->id);
+    }
+
 }
