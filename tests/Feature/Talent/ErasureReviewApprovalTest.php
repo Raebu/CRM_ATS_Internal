@@ -24,7 +24,7 @@ final class ErasureReviewApprovalTest extends TestCase
         $id = DB::table('talent_erasure_reviews')->insertGetId([
             'tenant_id'=>$tenant->id,'privacy_request_id'=>$request->id,
             'candidate_id'=>$candidate->id,'status'=>'draft','prepared_by'=>17,
-            'inventory_digest'=>hash('sha256', json_encode(app(\App\Services\Talent\CandidatePrivacyInventory::class)->inspect($tenant->id, $candidate->id), JSON_THROW_ON_ERROR)),
+            'inventory_digest'=>app(\App\Services\Talent\CandidateErasureFingerprint::class)->digest($tenant->id, $candidate->id),
             'legal_hold_notes'=>'Reviewed; no active hold recorded in test',
             'backup_handling_notes'=>'Backup restoration review is required',
             'created_at'=>now(),'updated_at'=>now(),
