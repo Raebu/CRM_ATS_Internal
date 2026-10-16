@@ -115,4 +115,50 @@ final class ErasureReviewController extends Controller
         $approval->approve($tenant->id,$review->id,auth()->guard('user')->id());
         return back()->with('success','Independent review approved. Erasure execution remains disabled.');
     }
+
+    public function refresh(int $id)
+    {
+        $tenant=$this->tenant();
+        $actor=auth()->guard('user')->id();
+        DB::transaction(function () use ($tenant,$id,$actor) {
+            $request=PrivacyRequest::where('tenant_id',$tenant->id)
+                ->where('request_type','erasure')->lockForUpdate()->findOrFail($id);
+            if ($request->status!=='in_review' || !$request->verified_at
+                || !$request->identity_evidence_reviewed_at) {
+                throw ValidationException::withMessages(['erasure_review'=>'Verified, active erasure request required.']);
+            }
+            $review=DB::table('talent_erasure_reviews')
+                ->where('tenant_id',$tenant->id)->where('privacy_request_id',$id)
+                ->lockForUpdate()->first();
+            if (!$review || $review->status!=='draft') abort(409);
+            $digest=app(CandidateErasureFingerprint::class)->digest($tenant->id,(int)$request->candidate_id);
+            DB::table('talent_erasure_reviews')->where('tenant_id',$tenant->id)
+                ->where('id',$review->id)->update([
+                    'prepared_by'=>$actor,'inventory_digest'=>$digest,
+                    'legal_hold_notes'=>null,'backup_handling_notes'=>null,
+                    'approved_by'=>null,'approved_at'=>null,'updated_at'=>now(),
+                ]);
+            DB::table('talent_erasure_decisions')->where('tenant_id',$tenant->id)
+                ->where('review_id',$review->id)->update([
+                    'proposed_action'=>'review_required','legal_basis'=>null,
+                    'rationale'=>null,'reviewed_by'=>null,'reviewed_at'=>null,
+                    'updated_at'=>now(),
+                ]);
+            DB::table('talent_events')->insert([
+                'tenant_id'=>$tenant->id,
+                'event_id'=>(string)\Illuminate\Support\Str::uuid(),
+                'event_type'=>'privacy.erasure_review_refreshed.v1',
+                'event_version'=>1,'aggregate_type'=>'erasure_review',
+                'aggregate_id'=>$review->id,
+                'payload'=>json_encode([
+                    'review_id'=>$review->id,'actor_id'=>$actor,
+                    'fingerprint_version'=>CandidateErasureFingerprint::VERSION,
+                    'deletion_performed'=>false,
+                ],JSON_THROW_ON_ERROR),
+                'created_at'=>now(),'updated_at'=>now(),
+            ]);
+        });
+        return back()->with('success','Review fingerprint refreshed; all decisions and retention notes must be rechecked. Deletion remains disabled.');
+    }
+
 }
