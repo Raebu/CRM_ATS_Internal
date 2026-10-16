@@ -50,9 +50,7 @@ final class ErasureReviewController extends Controller
             if ($existing) {
                 throw ValidationException::withMessages(['erasure_review'=>'A review already exists.']);
             }
-            $digest=hash('sha256',json_encode(
-                app(CandidatePrivacyInventory::class)->inspect($tenant->id,$request->candidate_id),
-                JSON_THROW_ON_ERROR));
+            $digest=app(CandidateErasureFingerprint::class)->digest($tenant->id,(int)$request->candidate_id);
             $reviewId=DB::table('talent_erasure_reviews')->insertGetId([
                 'tenant_id'=>$tenant->id,'privacy_request_id'=>$id,
                 'candidate_id'=>$request->candidate_id,'prepared_by'=>$actor,
