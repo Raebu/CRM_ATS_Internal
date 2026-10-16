@@ -31,6 +31,7 @@ class TalentAuthorization
 'admin.talent.erasure.prepare' => 'talent.privacy.manage',
 'admin.talent.erasure.save' => 'talent.privacy.manage',
 'admin.talent.erasure.approve' => 'talent.privacy.manage',
+        'admin.talent.erasure.refresh' => 'talent.privacy.manage',
         'admin.talent.documents.download' => 'talent.documents.view',
         'admin.talent.documents.upload' => 'talent.documents.create',
         'admin.talent.cv-profiles.approve' => 'talent.documents.create',
