@@ -96,8 +96,8 @@ final class ErasureReviewApprovalTest extends TestCase
     {
         [$tenant,$candidate] = $this->prepare();
         $other = Tenant::create(['name'=>'Other Tenant','slug'=>'other-tenant']);
-        $this->expectException(\\Symfony\\Component\\HttpKernel\\Exception\\NotFoundHttpException::class);
-        app(\\App\\Services\\Talent\\CandidateErasureFingerprint::class)->digest($other->id,$candidate->id);
+        $this->expectException(\Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class);
+        app(\App\Services\Talent\CandidateErasureFingerprint::class)->digest($other->id,$candidate->id);
     }
 
 }
